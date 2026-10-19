@@ -9,6 +9,7 @@ import {
   Image,
   DatabaseBackup,
   Palette,
+  FileCode,
   Info,
   ChevronDown,
   ChevronRight
@@ -83,6 +84,11 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
       label: '镜像',
       icon: Box,
     },    
+    {
+      id: '#compose',
+      label: '编排',
+      icon: FileCode,
+    },
     {
       id: '#backups',
       label: '备份',

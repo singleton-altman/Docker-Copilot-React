@@ -124,6 +124,35 @@ export const containerAPI = {
   },
   deleteBackup: (filename) => apiClient.delete(`/api/container/backups?filename=${encodeURIComponent(filename)}`),
   backupToCompose: () => apiClient.get('/api/container/backup2compose'),
+  // 容器日志：tail 上限由服务端限制
+  getLogs: (id, { tail = 300, timestamps = false } = {}) => {
+    const params = new URLSearchParams({ tail: String(tail), timestamps: String(timestamps) })
+    return apiClient.get(`/api/container/${id}/logs?${params.toString()}`)
+  },
+}
+
+// Compose 文件管理与执行
+export const composeAPI = {
+  listFiles: () => apiClient.get('/api/compose/files'),
+  readFile: (filename) =>
+    apiClient.get('/api/compose/file', { params: { filename } }),
+  saveFile: (filename, content) =>
+    apiClient.put('/api/compose/file', { filename, content }),
+  deleteFile: (filename) =>
+    apiClient.delete('/api/compose/file', { params: { filename } }),
+  validate: (filename, content) =>
+    apiClient.post('/api/compose/validate', { filename, content }),
+  deploy: (filename, action) =>
+    apiClient.post('/api/compose/deploy', { filename, action }),
+  getJob: (jobId) =>
+    apiClient.get('/api/compose/job', { params: { jobId } }),
+  history: () => apiClient.get('/api/compose/history'),
+  getVersions: (filename) =>
+    apiClient.get('/api/compose/versions', { params: { filename } }),
+  rollback: (filename, backupName) =>
+    apiClient.post('/api/compose/rollback', { filename, backupName }),
+  trash: () => apiClient.get('/api/compose/trash'),
+  restore: (name) => apiClient.post('/api/compose/restore', { name }),
 }
 
 // 镜像相关API

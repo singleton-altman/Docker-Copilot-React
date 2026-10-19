@@ -9,9 +9,11 @@ import {
   Calendar,
   Package,
   X,
-  Info
+  Info,
+  ScrollText
 } from 'lucide-react'
 import { containerAPI, progressAPI } from '../api/client.js'
+import { ContainerLogsModal } from './ContainerLogs.jsx'
 import { cn } from '../utils/cn.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getImageLogo } from '../config/imageLogos.js'
@@ -1127,6 +1129,7 @@ function ContainerDetailModal({ container, onClose, onRename, onUpdate, onAction
   const [isActionProcessing, setIsActionProcessing] = useState(false)
   const [currentAction, setCurrentAction] = useState('')
   const [currentContainer, setCurrentContainer] = useState(container)
+  const [showLogs, setShowLogs] = useState(false)
 
   // 当容器切换时，更新表单字段的值
   React.useEffect(() => {
@@ -1391,12 +1394,21 @@ function ContainerDetailModal({ container, onClose, onRename, onUpdate, onAction
                 </div>
               </div>
             </div>
-            <button 
-              onClick={onClose}
-              className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
-            >
-              <X className="h-5 w-5" />
-            </button>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => setShowLogs(true)}
+                title="查看日志"
+                className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                <ScrollText className="h-4 w-4" />
+              </button>
+              <button 
+                onClick={onClose}
+                className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
           </div>
         </div>
         
@@ -1591,6 +1603,14 @@ function ContainerDetailModal({ container, onClose, onRename, onUpdate, onAction
           </div>
         </div>
       </div>
+
+      {/* 日志弹窗叠在上层 */}
+      {showLogs && (
+        <ContainerLogsModal
+          container={currentContainer}
+          onClose={() => setShowLogs(false)}
+        />
+      )}
     </div>
   )
 }
