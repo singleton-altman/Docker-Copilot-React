@@ -40,7 +40,9 @@ const API_BASE_URL = getAPIBaseURL()
 // 创建axios实例
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
-  timeout: 10000,
+  // 服务端列举容器时会对每个容器执行 inspect，容器较多或经公网代理时耗时可能超过 10s。
+  // 30s 覆盖常见规模，同时避免无限等待。
+  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },

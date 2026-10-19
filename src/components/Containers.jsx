@@ -10,7 +10,8 @@ import {
   Package,
   X,
   Info,
-  ScrollText
+  ScrollText,
+  AlertCircle
 } from 'lucide-react'
 import { containerAPI, progressAPI } from '../api/client.js'
 import { ContainerLogsModal } from './ContainerLogs.jsx'
@@ -92,7 +93,7 @@ export function Containers() {
 
 
   // 使用React Query获取容器列表
-  const { data: containers = [], isLoading, refetch } = useQuery({
+  const { data: containers = [], isLoading, isError, error, refetch } = useQuery({
     queryKey: ['containers'],
     queryFn: async () => {
       const response = await containerAPI.getContainers()
@@ -104,6 +105,8 @@ export function Containers() {
       }
     },
     refetchInterval: 10000, // 每10秒自动刷新一次
+    // 失败时保留上一次的数据，避免列表突然清空
+    keepPreviousData: true,
   })
 
   const handleContainerAction = async (containerId, action) => {
@@ -1093,6 +1096,24 @@ export function Containers() {
                 </div>
               )
             })}
+          </div>
+        ) : isError ? (
+          <div className="text-center py-12">
+            <AlertCircle className="mx-auto h-12 w-12 text-amber-500" />
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">
+              无法加载容器列表
+            </h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              {error?.code === 'ECONNABORTED' || error?.message?.includes('timeout')
+                ? '请求超时，服务器响应较慢'
+                : error?.response?.data?.msg || error?.message || '未知错误'}
+            </p>
+            <button
+              onClick={() => refetch()}
+              className="mt-3 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+            >
+              重试
+            </button>
           </div>
         ) : (
           <div className="text-center py-12">
