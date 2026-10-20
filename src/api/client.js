@@ -104,6 +104,8 @@ export const versionAPI = {
 // 容器相关API
 export const containerAPI = {
   getContainers: () => apiClient.get('/api/containers'),
+  // 容器资源指标（服务端 v2.2.0+）：CPU / 内存 / 网络 / 磁盘 IO
+  getContainerStats: () => apiClient.get('/api/container/stats'),
   startContainer: (id) => apiClient.post(`/api/container/${id}/start`),
   stopContainer: (id) => apiClient.post(`/api/container/${id}/stop`),
   restartContainer: (id) => apiClient.post(`/api/container/${id}/restart`),

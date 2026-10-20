@@ -1,9 +1,9 @@
 import React, { useState } from 'react'
-import { 
-  Play, 
-  Square, 
-  RotateCcw, 
-  RefreshCw, 
+import {
+  Play,
+  Square,
+  RotateCcw,
+  RefreshCw,
   Upload,
   Clock,
   Calendar,
@@ -11,11 +11,15 @@ import {
   X,
   Info,
   ScrollText,
-  AlertCircle
+  AlertCircle,
+  Cpu,
+  MemoryStick,
+  ArrowDownUp
 } from 'lucide-react'
 import { containerAPI, progressAPI } from '../api/client.js'
 import { ContainerLogsModal } from './ContainerLogs.jsx'
 import { cn } from '../utils/cn.js'
+import { formatBytes, formatRate } from '../utils/format.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { getImageLogo } from '../config/imageLogos.js'
 import icons8Img from '../assets/icons8.png'
@@ -107,6 +111,26 @@ export function Containers() {
     refetchInterval: 10000, // 每10秒自动刷新一次
     // 失败时保留上一次的数据，避免列表突然清空
     keepPreviousData: true,
+  })
+
+  // 容器资源指标（CPU/内存/网络）。服务端 v2.2.0 起提供；
+  // 请求失败（如老服务端无此接口）时停止轮询并降级为不展示。
+  const { data: statsById = {} } = useQuery({
+    queryKey: ['containerStats'],
+    queryFn: async () => {
+      const response = await containerAPI.getContainerStats()
+      if (response.data.code !== 0) {
+        throw new Error(response.data.msg)
+      }
+      const map = {}
+      for (const stats of response.data.data || []) {
+        map[stats.id] = stats
+      }
+      return map
+    },
+    refetchInterval: (query) => (query.state.error ? false : 5000),
+    retry: false,
+    staleTime: 4000,
   })
 
   const handleContainerAction = async (containerId, action) => {
@@ -1029,6 +1053,42 @@ export function Containers() {
                             </div>
                           )}
                         </div>
+
+                        {/* 资源指标行：CPU / 内存 / 网络（仅 running 且服务端支持时显示） */}
+                        {container.status === 'running' && statsById[container.id] && (() => {
+                          const stats = statsById[container.id]
+                          return (
+                            <div className="mt-2 grid grid-cols-3 gap-1.5 text-[11px]">
+                              <div
+                                className="flex items-center justify-center gap-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-1.5 py-1 border border-gray-100 dark:border-gray-700/60"
+                                title={`CPU 占用 ${stats.cpuPercent.toFixed(2)}%`}
+                              >
+                                <Cpu className="h-3 w-3 text-purple-500 flex-shrink-0" />
+                                <span className="font-medium text-gray-700 dark:text-gray-200 truncate tabular-nums">
+                                  {stats.cpuPercent.toFixed(1)}%
+                                </span>
+                              </div>
+                              <div
+                                className="flex items-center justify-center gap-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-1.5 py-1 border border-gray-100 dark:border-gray-700/60"
+                                title={`内存 ${formatBytes(stats.memoryUsage)} / ${formatBytes(stats.memoryLimit)}（${stats.memoryPercent.toFixed(1)}%）`}
+                              >
+                                <MemoryStick className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                                <span className="font-medium text-gray-700 dark:text-gray-200 truncate tabular-nums">
+                                  {formatBytes(stats.memoryUsage)}
+                                </span>
+                              </div>
+                              <div
+                                className="flex items-center justify-center gap-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-1.5 py-1 border border-gray-100 dark:border-gray-700/60"
+                                title={`网络 ↓${formatRate(stats.netRxRate)} ↑${formatRate(stats.netTxRate)}（累计 ↓${formatBytes(stats.netRx)} ↑${formatBytes(stats.netTx)}）`}
+                              >
+                                <ArrowDownUp className="h-3 w-3 text-emerald-500 flex-shrink-0" />
+                                <span className="font-medium text-gray-700 dark:text-gray-200 truncate tabular-nums">
+                                  {formatRate(stats.netRxRate)}
+                                </span>
+                              </div>
+                            </div>
+                          )
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -1435,6 +1495,9 @@ function ContainerDetailModal({ container, onClose, onRename, onUpdate, onAction
         
         {/* 弹窗内容 */}
         <div className="px-6 py-4 space-y-4">
+          {/* 资源指标（仅 running 且服务端支持时显示） */}
+          <ContainerStatsSection containerId={container.id} isRunning={currentContainer.status === 'running'} />
+
           {/* 容器名称 */}
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -1632,6 +1695,101 @@ function ContainerDetailModal({ container, onClose, onRename, onUpdate, onAction
           onClose={() => setShowLogs(false)}
         />
       )}
+    </div>
+  )
+}
+
+// 容器资源指标区块（详情弹窗）：自行轮询 stats 接口。
+// 老服务端没有该接口（404）时 available 置 false 并停止轮询，整块隐藏。
+function ContainerStatsSection({ containerId, isRunning }) {
+  const [stats, setStats] = useState(null)
+  const [available, setAvailable] = useState(true)
+
+  React.useEffect(() => {
+    if (!isRunning) return undefined
+    let interval = null
+    const fetchStats = async () => {
+      try {
+        const response = await containerAPI.getContainerStats()
+        if (response.data.code !== 0) {
+          setAvailable(false)
+          clearInterval(interval)
+          return
+        }
+        setStats((response.data.data || []).find((s) => s.id === containerId) || null)
+      } catch {
+        setAvailable(false)
+        clearInterval(interval)
+      }
+    }
+    fetchStats()
+    interval = setInterval(fetchStats, 5000)
+    return () => clearInterval(interval)
+  }, [containerId, isRunning])
+
+  if (!isRunning || !available || !stats) return null
+
+  const memPercent = Math.min(100, Math.max(0, stats.memoryPercent))
+  return (
+    <div>
+      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+        资源占用
+      </label>
+      <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-3">
+        {/* CPU */}
+        <div className="flex items-center justify-between text-xs">
+          <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+            <Cpu className="h-3.5 w-3.5 text-purple-500" /> CPU
+          </span>
+          <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+            {stats.cpuPercent.toFixed(2)}%
+          </span>
+        </div>
+        {/* 内存 */}
+        <div className="space-y-1">
+          <div className="flex items-center justify-between text-xs">
+            <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+              <MemoryStick className="h-3.5 w-3.5 text-blue-500" /> 内存
+            </span>
+            <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+              {formatBytes(stats.memoryUsage)} / {formatBytes(stats.memoryLimit)}（{stats.memoryPercent.toFixed(1)}%）
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+            <div
+              className={cn(
+                "h-full rounded-full transition-all duration-500",
+                memPercent > 80 ? "bg-red-500" : memPercent > 50 ? "bg-yellow-500" : "bg-blue-500"
+              )}
+              style={{ width: `${Math.max(memPercent, 1)}%` }}
+            />
+          </div>
+        </div>
+        {/* 网络 */}
+        <div className="flex items-center justify-between text-xs">
+          <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
+            <ArrowDownUp className="h-3.5 w-3.5 text-emerald-500" /> 网络
+          </span>
+          <span className="font-medium text-gray-900 dark:text-white tabular-nums">
+            ↓{formatRate(stats.netRxRate)} ↑{formatRate(stats.netTxRate)}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-xs text-gray-400 dark:text-gray-500">
+          <span>累计收发</span>
+          <span className="tabular-nums">↓{formatBytes(stats.netRx)} ↑{formatBytes(stats.netTx)}</span>
+        </div>
+        {/* 磁盘 IO 与进程数 */}
+        <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
+          <span className="text-gray-400 dark:text-gray-500">磁盘 IO（累计读写）</span>
+          <span className="text-gray-500 dark:text-gray-400 tabular-nums">
+            {formatBytes(stats.blockRead)} / {formatBytes(stats.blockWrite)}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-gray-400 dark:text-gray-500">进程数</span>
+          <span className="text-gray-500 dark:text-gray-400 tabular-nums">{stats.pids}</span>
+        </div>
+      </div>
     </div>
   )
 }
