@@ -460,13 +460,13 @@ export function Containers() {
   // 更新记录是否存在可操作状态
   const recordFor = (containerName) => updateRecords[containerName]
 
-  // 中断更新（服务端会在阶段边界停止并自动回撤）
+  // 中断更新：下载阶段直接停止（容器未改动）；已改过容器则自动恢复原状
   const handleCancelUpdate = (containerName) => {
     setConfirmModal({
       isOpen: true,
       title: '中断更新',
-      message: `确定中断 ${containerName} 的更新吗？服务端会停止当前更新并自动回撤到更新前的容器与镜像。`,
-      confirmText: '中断并回撤',
+      message: `确定中断 ${containerName} 的更新吗？下载中的镜像会立即停止拉取；若容器已被改动，会自动恢复到更新前的状态。`,
+      confirmText: '中断',
       type: 'warning',
       onConfirm: async () => {
         setConfirmModal(prev => ({ ...prev, isOpen: false }))
@@ -1210,7 +1210,7 @@ export function Containers() {
                             <button
                               onClick={(e) => { e.stopPropagation(); handleCancelUpdate(recordFor(container.name)?.containerName || container.name) }}
                               className="ml-1 px-2 py-0.5 rounded-md text-[11px] font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 transition-colors"
-                              title="中断更新并回撤"
+                              title="中断更新"
                             >
                               中断
                             </button>
