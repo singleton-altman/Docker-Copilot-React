@@ -435,30 +435,6 @@ export function Containers() {
     }
   }
 
-  // 容器更新记录（服务端 v2.3.0+）：用于展示中断/回撤入口，老服务端 404 时静默降级
-  const { data: updateRecords = {} } = useQuery({
-    queryKey: ['containerUpdates'],
-    queryFn: async () => {
-      const response = await containerAPI.getUpdates()
-      if (response.data.code !== 0) {
-        throw new Error(response.data.msg)
-      }
-      const map = {}
-      for (const record of response.data.data || []) {
-        // 同一容器可能有多条历史记录：只保留最新一条（服务端已按时间倒序）
-        if (!map[record.containerName]) {
-          map[record.containerName] = record
-        }
-      }
-      return map
-    },
-    refetchInterval: 5000,
-    retry: false,
-    staleTime: 4000,
-  })
-
-  // 更新记录是否存在可操作状态
-  const recordFor = (containerName) => updateRecords[containerName]
 
   // 中断更新：下载阶段直接停止（容器未改动）；已改过容器则自动恢复原状
   const handleCancelUpdate = (containerName) => {
@@ -478,7 +454,7 @@ export function Containers() {
           setConfirmModal({
             isOpen: true,
             title: '已请求中断',
-            message: response.data.msg || '正在回撤，请稍候刷新查看结果',
+            message: response.data.msg || '镜像拉取已停止，容器保持原状',
             onConfirm: () => setConfirmModal({ isOpen: false }),
             type: 'info'
           })
@@ -488,44 +464,6 @@ export function Containers() {
           setConfirmModal({
             isOpen: true,
             title: '中断失败',
-            message: error.message || '未知错误',
-            onConfirm: () => setConfirmModal({ isOpen: false }),
-            type: 'danger'
-          })
-        }
-      },
-      onCancel: () => setConfirmModal({ isOpen: false })
-    })
-  }
-
-  // 回撤到更新前版本
-  const handleRollback = (containerName, originalImage) => {
-    setConfirmModal({
-      isOpen: true,
-      title: '回撤到更新前版本',
-      message: `确定将 ${containerName} 回撤到 ${originalImage || '更新前的镜像'} 吗？当前容器会被删除并在原名称下重建。`,
-      confirmText: '确认回撤',
-      type: 'warning',
-      onConfirm: async () => {
-        setConfirmModal(prev => ({ ...prev, isOpen: false }))
-        try {
-          const response = await containerAPI.rollbackUpdate(containerName)
-          if (response.data.code !== 0) {
-            throw new Error(response.data.msg)
-          }
-          setConfirmModal({
-            isOpen: true,
-            title: '回撤成功',
-            message: response.data.msg || '已恢复到更新前版本',
-            onConfirm: () => setConfirmModal({ isOpen: false }),
-            type: 'info'
-          })
-          queryClient.invalidateQueries(['containerUpdates'])
-          setTimeout(() => refetch(), 1500)
-        } catch (error) {
-          setConfirmModal({
-            isOpen: true,
-            title: '回撤失败',
             message: error.message || '未知错误',
             onConfirm: () => setConfirmModal({ isOpen: false }),
             type: 'danger'
@@ -595,24 +533,25 @@ export function Containers() {
           }
         }
 
-        // 检查是否完成 - 兼容多种响应格式
+        // 检查是否结束 - 服务端的 isDone 是权威信号（成功/失败/被中断都会置位）
+        const isDone = data.data?.isDone === true
         const status = data.data?.status || data.status
-        const isCompleted = status === 'completed' || 
-                          status === 'success' || 
+        const isFailed = status === 'failed' ||
+                        status === 'error' ||
+                        (isDone && (progressMsg.includes('失败') || progressMsg.includes('错误'))) ||
+                        progressMsg.includes('失败') ||
+                        progressMsg.includes('错误') ||
+                        data.code === 500 ||
+                        data.code === 400
+        const isCompleted = isDone && !isFailed ||
+                          status === 'completed' ||
+                          status === 'success' ||
                           status === 'done' ||
                           status === 'finish' ||
                           status === 'finished' ||
                           progressMsg.includes('完成') ||
                           progressMsg.includes('成功') ||
                           (data.code === 200 && (data.msg === 'success' || data.msg === '操作成功' || data.msg === '更新成功'))
-
-        // 检查是否失败
-        const isFailed = status === 'failed' || 
-                        status === 'error' ||
-                        progressMsg.includes('失败') ||
-                        progressMsg.includes('错误') ||
-                        data.code === 500 ||
-                        data.code === 400
 
         if (isCompleted) {
           // 任务完成 - 立即停止轮询
@@ -1208,7 +1147,7 @@ export function Containers() {
                           </span>
                           {containerActions[container.id].action === 'update' && (
                             <button
-                              onClick={(e) => { e.stopPropagation(); handleCancelUpdate(recordFor(container.name)?.containerName || container.name) }}
+                              onClick={(e) => { e.stopPropagation(); handleCancelUpdate(container.name) }}
                               className="ml-1 px-2 py-0.5 rounded-md text-[11px] font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 transition-colors"
                               title="中断更新"
                             >
@@ -1260,17 +1199,6 @@ export function Containers() {
                             <span>更新</span>
                           </button>
 
-                          {/* 有可回撤记录时提供回撤入口 */}
-                          {recordFor(container.name)?.canRollback && (
-                            <button
-                              onClick={(e) => { e.stopPropagation(); handleRollback(container.name, recordFor(container.name)?.originalImage) }}
-                              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium"
-                              title={`回撤到 ${recordFor(container.name)?.originalImage || '更新前镜像'}`}
-                            >
-                              <RotateCcw className="h-4 w-4" />
-                              <span>回撤</span>
-                            </button>
-                          )}
                         </>
                       )}
                     </div>

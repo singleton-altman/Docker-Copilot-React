@@ -106,10 +106,9 @@ export const containerAPI = {
   getContainers: () => apiClient.get('/api/containers'),
   // 容器资源指标（服务端 v2.2.0+）：CPU / 内存 / 网络 / 磁盘 IO
   getContainerStats: () => apiClient.get('/api/container/stats'),
-  // 更新记录与回撤（服务端 v2.3.0+）
+  // 更新记录与中断（服务端 v2.3.0+）
   getUpdates: () => apiClient.get('/api/container/updates'),
   cancelUpdate: (name) => apiClient.post(`/api/container/${encodeURIComponent(name)}/update/cancel`),
-  rollbackUpdate: (name) => apiClient.post(`/api/container/${encodeURIComponent(name)}/rollback`),
   startContainer: (id) => apiClient.post(`/api/container/${id}/start`),
   stopContainer: (id) => apiClient.post(`/api/container/${id}/stop`),
   restartContainer: (id) => apiClient.post(`/api/container/${id}/restart`),
