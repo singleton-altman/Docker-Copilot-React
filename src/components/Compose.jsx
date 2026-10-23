@@ -52,6 +52,14 @@ function actionLabel(action) {
   return ACTION_LABELS[action] || action
 }
 
+const STEP_LABELS = {
+  pull: '拉取',
+  up: '启动',
+  down: '停止',
+  restart: '重启',
+  result: '结论',
+}
+
 function versionLabel(action) {
   return VERSION_LABELS[action] || action
 }
@@ -566,6 +574,27 @@ export function Compose() {
               <X className="w-4 h-4" />
             </button>
           </div>
+          {job.steps?.length > 0 && (
+            <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700 space-y-1.5">
+              {job.steps.map((step, index) => (
+                <div key={`${step.stage}-${index}`} className="flex items-start gap-2 text-xs">
+                  {step.status === 'success' && (
+                    <CheckCircle2 className="w-3.5 h-3.5 mt-0.5 shrink-0 text-green-600" />
+                  )}
+                  {step.status === 'warning' && (
+                    <AlertTriangle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-amber-500" />
+                  )}
+                  {(step.status === 'failed' || step.status === 'skipped') && (
+                    <XCircle className="w-3.5 h-3.5 mt-0.5 shrink-0 text-red-600" />
+                  )}
+                  <span className="font-medium text-gray-700 dark:text-gray-300 shrink-0 w-12">
+                    {STEP_LABELS[step.stage] || step.stage}
+                  </span>
+                  <span className="text-gray-600 dark:text-gray-400">{step.message}</span>
+                </div>
+              ))}
+            </div>
+          )}
           <pre className="p-3 text-xs font-mono whitespace-pre-wrap break-all max-h-60 overflow-auto text-gray-700 dark:text-gray-300">
             {job.output || '(无输出)'}
           </pre>
