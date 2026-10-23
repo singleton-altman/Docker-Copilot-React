@@ -79,6 +79,7 @@ export function Compose() {
   const [job, setJob] = useState(null)
   const [runningAction, setRunningAction] = useState('')
   const [showNewDialog, setShowNewDialog] = useState(false)
+  const [showDeployDialog, setShowDeployDialog] = useState(false)
   const [newName, setNewName] = useState('')
   // 编辑器主题：跟随系统偏好初始化，用户切换后持久化
   const [editorTheme, setEditorTheme] = useState(() => {
@@ -281,11 +282,8 @@ export function Compose() {
     setRunningAction('')
   }
 
-  const handleAction = async (action) => {
+  const runAction = async (action) => {
     if (!selected) return
-    if (dirty && !window.confirm('有未保存的修改，将以已保存的内容执行。是否继续？')) {
-      return
-    }
     setError('')
     setJob(null)
     setRunningAction(action)
@@ -299,6 +297,24 @@ export function Compose() {
       setError(err.response?.data?.msg || err.message || '执行失败')
       setRunningAction('')
     }
+  }
+
+  const handleAction = async (action) => {
+    if (!selected) return
+    if (dirty && !window.confirm('有未保存的修改，将以已保存的内容执行。是否继续？')) {
+      return
+    }
+    // 部署前先问清楚要不要拉取最新镜像，避免「以为更新了其实用的是旧镜像」
+    if (action === 'deploy') {
+      setShowDeployDialog(true)
+      return
+    }
+    await runAction(action)
+  }
+
+  const confirmDeploy = async (pullLatest) => {
+    setShowDeployDialog(false)
+    await runAction(pullLatest ? 'deploy' : 'up')
   }
 
   return (
@@ -593,6 +609,51 @@ export function Compose() {
       )}
 
       {/* 新建对话框 */}
+      {showDeployDialog && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-4">
+            <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
+              部署 {selected}
+            </h3>
+            <p className="text-sm text-gray-600 dark:text-gray-300">
+              是否先拉取最新镜像？
+            </p>
+            <div className="mt-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 px-3 py-2 text-[11px] text-gray-600 dark:text-gray-400 space-y-1">
+              <p>
+                <span className="font-medium text-gray-700 dark:text-gray-200">拉取最新</span>
+                ：先 <code className="font-mono">pull</code> 再 <code className="font-mono">up -d</code>，
+                能拿到镜像的新版本。拉取失败时会用本地已有镜像继续启动。
+              </p>
+              <p>
+                <span className="font-medium text-gray-700 dark:text-gray-200">用本地镜像</span>
+                ：直接 <code className="font-mono">up -d</code>，不访问镜像仓库，
+                适合离线环境或只有本地构建的服务。
+              </p>
+            </div>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                onClick={() => setShowDeployDialog(false)}
+                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600"
+              >
+                取消
+              </button>
+              <button
+                onClick={() => confirmDeploy(false)}
+                className="px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
+              >
+                用本地镜像
+              </button>
+              <button
+                onClick={() => confirmDeploy(true)}
+                className="px-3 py-1.5 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+              >
+                拉取最新并启动
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {showNewDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm p-4">
