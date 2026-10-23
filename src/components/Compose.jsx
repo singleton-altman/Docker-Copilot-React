@@ -5,7 +5,7 @@ import {
   Save,
   Trash2,
   RefreshCw,
-  Play,
+  Rocket,
   Square,
   RotateCcw,
   Download,
@@ -26,9 +26,9 @@ import { ComposeEditor } from './ComposeEditor.jsx'
 import { formatCompose } from '../utils/formatCompose.js'
 
 const ACTIONS = [
-  { key: 'up', label: '启动', icon: Play, color: 'text-green-600 dark:text-green-400' },
+  { key: 'deploy', label: '更新并启动', icon: Rocket, color: 'text-green-600 dark:text-green-400' },
   { key: 'restart', label: '重启', icon: RotateCcw, color: 'text-amber-600 dark:text-amber-400' },
-  { key: 'pull', label: '拉取', icon: Download, color: 'text-blue-600 dark:text-blue-400' },
+  { key: 'pull', label: '仅拉取', icon: Download, color: 'text-blue-600 dark:text-blue-400' },
   { key: 'down', label: '停止', icon: Square, color: 'text-red-600 dark:text-red-400' },
 ]
 
@@ -38,6 +38,18 @@ const VERSION_LABELS = {
   delete: '删除',
   restore: '从回收站恢复',
   rollback: '回滚',
+}
+
+const ACTION_LABELS = {
+  deploy: '更新并启动',
+  up: '启动',
+  restart: '重启',
+  pull: '拉取',
+  down: '停止',
+}
+
+function actionLabel(action) {
+  return ACTION_LABELS[action] || action
 }
 
 function versionLabel(action) {
@@ -244,8 +256,9 @@ export function Compose() {
   }
 
   const pollJob = async (jobId) => {
-    // 内置执行器通过 docker.sock 直接执行，首次可能需要拉镜像
-    const deadline = Date.now() + 3 * 60 * 1000
+    // 内置执行器通过 docker.sock 直接执行；deploy 要先拉镜像再启动，
+    // 服务端对 pull 与 up 各自给 10 分钟，这里按两段的总时长放宽。
+    const deadline = Date.now() + 21 * 60 * 1000
     while (Date.now() < deadline) {
       await new Promise((resolve) => setTimeout(resolve, 2000))
       try {
@@ -530,7 +543,7 @@ export function Compose() {
               <XCircle className="w-4 h-4 text-red-600" />
             )}
             <span className="text-sm font-medium">
-              {job.action} {job.filename} · {job.success ? '成功' : '失败'}
+              {actionLabel(job.action)} {job.filename} · {job.success ? '成功' : '失败'}
             </span>
             <div className="flex-1" />
             <button onClick={() => setJob(null)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
@@ -564,7 +577,7 @@ export function Compose() {
                   ) : (
                     <XCircle className="w-3.5 h-3.5 text-red-600" />
                   )}
-                  <span className="font-medium text-gray-800 dark:text-gray-200">{item.action}</span>
+                  <span className="font-medium text-gray-800 dark:text-gray-200">{actionLabel(item.action)}</span>
                   <span className="text-gray-600 dark:text-gray-400">{item.filename}</span>
                   <span className="text-gray-400">{new Date(item.finishedAt).toLocaleString('zh-CN')}</span>
                 </div>
