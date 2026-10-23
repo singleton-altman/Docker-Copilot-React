@@ -423,6 +423,11 @@ export function MobileBottomNav({ activeTab, onTabChange, windowWidth = 1024 }) 
       icon: Box,
     },
     {
+      id: '#compose',
+      label: '编排',
+      icon: FileCode,
+    },
+    {
       id: '#backups',
       label: '备份',
       icon: DatabaseBackup,
@@ -447,15 +452,15 @@ export function MobileBottomNav({ activeTab, onTabChange, windowWidth = 1024 }) 
                 key={item.id}
                 onClick={() => onTabChange(item.id)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-1.5 py-2 px-3 rounded-lg transition-all duration-200 active:scale-95 flex-1 min-h-[64px]",
+                  "flex flex-col items-center justify-center gap-1 py-2 px-1 rounded-lg transition-all duration-200 active:scale-95 flex-1 min-w-0 min-h-[64px]",
                   isActive
                     ? "text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20"
                     : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200"
                 )}
                 title={item.label}
               >
-                <Icon className="h-6 w-6 flex-shrink-0" />
-                <span className="text-xs font-medium truncate">{item.label}</span>
+                <Icon className="h-5 w-5 flex-shrink-0" />
+                <span className="text-[11px] font-medium truncate max-w-full">{item.label}</span>
               </button>
             )
           })}
