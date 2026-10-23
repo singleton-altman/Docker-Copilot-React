@@ -244,7 +244,7 @@ export function Compose() {
   }
 
   const pollJob = async (jobId) => {
-    // 服务端只投递请求，宿主机 watcher 执行，首次可能需要拉镜像
+    // 内置执行器通过 docker.sock 直接执行，首次可能需要拉镜像
     const deadline = Date.now() + 3 * 60 * 1000
     while (Date.now() < deadline) {
       await new Promise((resolve) => setTimeout(resolve, 2000))
@@ -294,7 +294,7 @@ export function Compose() {
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Compose</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            编辑 compose 文件并投递执行请求，实际执行由宿主机 watcher 完成
+            编辑 compose 文件并一键部署，内置执行器通过 docker.sock 直接执行
           </p>
         </div>
         <div className="flex items-center gap-2">

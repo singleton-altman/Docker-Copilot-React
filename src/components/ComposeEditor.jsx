@@ -222,8 +222,8 @@ export function ComposeEditor({
     const view = new EditorView({ state, parent: hostRef.current })
     viewRef.current = view
     onReady?.(view)
-    applyTheme(view, theme)
-    applyReadOnly(view, readOnly)
+    applyTheme(view, theme, themeCompartment.current)
+    applyReadOnly(view, readOnly, readOnlyCompartment.current)
 
     return () => {
       view.destroy()
@@ -245,29 +245,29 @@ export function ComposeEditor({
   useEffect(() => {
     const view = viewRef.current
     if (!view) return
-    applyTheme(view, theme)
+    applyTheme(view, theme, themeCompartment.current)
   }, [theme])
 
   useEffect(() => {
     const view = viewRef.current
     if (!view) return
-    applyReadOnly(view, readOnly)
+    applyReadOnly(view, readOnly, readOnlyCompartment.current)
   }, [readOnly])
 
   return <div ref={hostRef} className="h-full min-h-0 overflow-hidden" data-placeholder={placeholder} />
 }
 
-function applyTheme(view, theme) {
+function applyTheme(view, theme, compartment) {
   view.dispatch({
-    effects: themeCompartment.current.reconfigure(
+    effects: compartment.reconfigure(
       theme === 'dark' ? [oneDark, syntaxHighlighting(darkHighlight)] : []
     ),
   })
 }
 
-function applyReadOnly(view, readOnly) {
+function applyReadOnly(view, readOnly, compartment) {
   view.dispatch({
-    effects: readOnlyCompartment.current.reconfigure(
+    effects: compartment.reconfigure(
       EditorView.editable.of(!readOnly)
     ),
   })
