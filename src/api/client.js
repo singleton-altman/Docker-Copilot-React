@@ -149,11 +149,11 @@ export const composeAPI = {
     apiClient.delete('/api/compose/file', { params: { filename } }),
   validate: (filename, content) =>
     apiClient.post('/api/compose/validate', { filename, content }),
-  deploy: (filename, action) =>
-    apiClient.post('/api/compose/deploy', { filename, action }),
-  getJob: (jobId) =>
-    apiClient.get('/api/compose/job', { params: { jobId } }),
-  history: () => apiClient.get('/api/compose/history'),
+  deploy: (filename, action, { signal } = {}) =>
+    apiClient.post('/api/compose/deploy', { filename, action }, { signal }),
+  getJob: (jobId, { signal } = {}) =>
+    apiClient.get('/api/compose/job', { params: { jobId }, signal }),
+  history: ({ signal } = {}) => apiClient.get('/api/compose/history', { signal }),
   getVersions: (filename) =>
     apiClient.get('/api/compose/versions', { params: { filename } }),
   rollback: (filename, backupName) =>

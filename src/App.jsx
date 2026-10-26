@@ -10,6 +10,8 @@ import { About } from './components/About.jsx'
 import { ThemeProvider } from './hooks/useTheme.jsx'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cn } from './utils/cn.js'
+import { composeAPI } from './api/client.js'
+import { createComposeJobsController } from './hooks/composeJobs.js'
 
 // 创建一个全局的QueryClient实例
 const queryClient = new QueryClient({
@@ -23,7 +25,13 @@ const queryClient = new QueryClient({
 
 function AppContent() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [activeTab, setActiveTab] = useState('#containers')
+  // Memory-only controller belongs to this authenticated session, not the tab.
+  const [jobsController, setJobsController] = useState(() => createComposeJobsController(composeAPI))
+  const resetComposeSession = () => setJobsController((previous) => {
+    previous.stop()
+    return createComposeJobsController(composeAPI)
+  })
+  const [activeTab, setActiveTab] = useState(() => typeof window !== 'undefined' ? window.location.hash || '#containers' : '#containers')
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024)
   const [userPreferredCollapsed, setUserPreferredCollapsed] = useState(false)
 
@@ -53,6 +61,7 @@ function AppContent() {
     // 监听storage事件，当其他标签页修改localStorage时更新认证状态
     const handleStorageChange = (e) => {
       if (e.key === 'docker_copilot_token') {
+        resetComposeSession()
         if (e.newValue) {
           setIsAuthenticated(true)
         } else {
@@ -65,6 +74,7 @@ function AppContent() {
     
     // 监听自定义事件，用于在本标签页中处理认证状态变化
     const handleAuthChange = (e) => {
+      resetComposeSession()
       if (e.detail.authenticated) {
         setIsAuthenticated(true)
       } else {
@@ -81,8 +91,11 @@ function AppContent() {
     }
     
     window.addEventListener('resize', handleResize)
+    const handleHashChange = () => setActiveTab(window.location.hash || '#containers')
+    window.addEventListener('hashchange', handleHashChange)
     
     return () => {
+      window.removeEventListener('hashchange', handleHashChange)
       window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('authChange', handleAuthChange)
       window.removeEventListener('resize', handleResize)
@@ -104,6 +117,7 @@ function AppContent() {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab)
+    if (window.location.hash !== tab) window.location.hash = tab
   }
 
   const handleToggleCollapse = () => {
@@ -126,7 +140,7 @@ function AppContent() {
       case '#about':
         return <About />
       case '#compose':
-        return <Compose />
+        return <Compose jobsController={jobsController} />
       default:
         return <Containers />
     }

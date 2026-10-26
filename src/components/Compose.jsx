@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   FileCode,
   Plus,
@@ -24,6 +24,9 @@ import { composeAPI } from '../api/client.js'
 import { cn } from '../utils/cn.js'
 import { ComposeEditor } from './ComposeEditor.jsx'
 import { formatCompose } from '../utils/formatCompose.js'
+import { useComposeJobs } from '../hooks/useComposeJobs.js'
+import { ACTIVE_STATUSES, STATUS_LABELS, serviceBadgeTone, serviceStatusView } from '../hooks/composeJobs.js'
+import { fileModifiedAfterDeploy, sha256Hex, shortFingerprint } from '../utils/fingerprint.js'
 
 const ACTIONS = [
   { key: 'deploy', label: '更新并启动', icon: Rocket, color: 'text-green-600 dark:text-green-400' },
@@ -58,11 +61,24 @@ const STEP_LABELS = {
   down: '停止',
   restart: '重启',
   result: '结论',
+  ps: '容器状态',
+  fingerprint: '配置指纹',
 }
 
 function versionLabel(action) {
   return VERSION_LABELS[action] || action
 }
+
+// 服务徽标色调：healthy 绿 / unhealthy 红 / starting 琥珀；无 health 仅展示 state（灰）。
+const SERVICE_TONE_CLASSES = {
+  healthy: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
+  unhealthy: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
+  starting: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
+  plain: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+}
+
+// 确认弹窗里的指纹只展示前 16 位，完整值放 title 提示。
+const DEPLOY_FINGERPRINT_DISPLAY_LENGTH = 16
 
 const TEMPLATE = `services:
   app:
@@ -72,7 +88,7 @@ const TEMPLATE = `services:
     restart: unless-stopped
 `
 
-export function Compose() {
+export function Compose({ jobsController }) {
   const [files, setFiles] = useState([])
   const [selected, setSelected] = useState(null)
   const [content, setContent] = useState('')
@@ -82,12 +98,29 @@ export function Compose() {
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
-  const [history, setHistory] = useState([])
   const [showHistory, setShowHistory] = useState(false)
-  const [job, setJob] = useState(null)
-  const [runningAction, setRunningAction] = useState('')
+  const tasks = useComposeJobs(jobsController)
+  const { controller } = tasks
+  const history = Object.values(tasks.jobs).sort((a, b) =>
+    (Date.parse(b.createdAt || b.result?.finishedAt) || 0) - (Date.parse(a.createdAt || a.result?.finishedAt) || 0) ||
+    a.id.localeCompare(b.id))
+  const task = tasks.jobs[tasks.selectedId]
+  const job = task?.result
+  // 指纹口径：任务结果里的指纹优先，回退到任务元数据（提交响应的 job.configSha256）。
+  const jobFingerprint = job?.configSha256 || task?.configSha256 || ''
+  const modifiedAfterDeploy = Boolean(task && selected === task.filename &&
+    fileModifiedAfterDeploy(jobFingerprint, contentHash))
+  const servicesView = task ? serviceStatusView(task.action, task.status, job) : null
+  const selectedBusy = selected && controller.blocked(selected)
+  const runningAction = history.find((item) => item.filename === selected && ACTIVE_STATUSES.has(item.status))?.action ||
+    tasks.submissions[selected]?.action || ''
+  const noticeTimer = useRef(null)
   const [showNewDialog, setShowNewDialog] = useState(false)
   const [showDeployDialog, setShowDeployDialog] = useState(false)
+  // 已保存内容的 SHA-256（打开/保存时缓存，避免每次渲染重算）；null 表示无法计算。
+  const [contentHash, setContentHash] = useState(null)
+  // 部署确认弹窗展示的指纹（对已保存内容计算）；null 表示 WebCrypto 不可用，隐藏该行。
+  const [deployFingerprint, setDeployFingerprint] = useState(null)
   const [newName, setNewName] = useState('')
   // 编辑器主题：跟随系统偏好初始化，用户切换后持久化
   const [editorTheme, setEditorTheme] = useState(() => {
@@ -102,7 +135,8 @@ export function Compose() {
 
   const flash = (message) => {
     setNotice(message)
-    setTimeout(() => setNotice(''), 2000)
+    clearTimeout(noticeTimer.current)
+    noticeTimer.current = setTimeout(() => setNotice(''), 2000)
   }
 
   const loadFiles = useCallback(async () => {
@@ -119,21 +153,23 @@ export function Compose() {
     }
   }, [])
 
-  const loadHistory = useCallback(async () => {
-    try {
-      const response = await composeAPI.history()
-      if (response.data.code === 200) {
-        setHistory(response.data.data?.results || [])
-      }
-    } catch {
-      // 历史读取失败不影响主流程
-    }
-  }, [])
-
   useEffect(() => {
     loadFiles()
-    loadHistory()
-  }, [loadFiles, loadHistory])
+    return () => clearTimeout(noticeTimer.current)
+  }, [loadFiles])
+
+  const guardFile = (name) => {
+    if (!controller.blocked(name)) return false
+    setError('此文件任务处理中、提交结果未知或尚未完成历史对账，请先恢复跟踪确认状态')
+    return true
+  }
+
+  const mutateFile = async (name, operation) => {
+    let response
+    const reservation = await controller.withFileOperation(name, async () => { response = await operation() })
+    if (!reservation.accepted) throw new Error('此文件处理中或结果待确认，请先历史对账')
+    return response
+  }
 
   const openFile = async (name) => {
     setLoadingFile(true)
@@ -142,9 +178,11 @@ export function Compose() {
       const response = await composeAPI.readFile(name)
       if (response.data.code !== 200) throw new Error(response.data.msg)
       const text = response.data.data?.content || ''
+      const hash = await sha256Hex(text)
       setSelected(name)
       setContent(text)
       setOriginal(text)
+      setContentHash(hash)
     } catch (err) {
       setError(err.response?.data?.msg || err.message || '读取文件失败')
     } finally {
@@ -157,9 +195,11 @@ export function Compose() {
     setSaving(true)
     setError('')
     try {
-      const response = await composeAPI.saveFile(selected, content)
+      const response = await mutateFile(selected, () => composeAPI.saveFile(selected, content))
       if (response.data.code !== 200) throw new Error(response.data.msg)
+      const hash = await sha256Hex(content)
       setOriginal(content)
+      setContentHash(hash)
       flash('已保存')
       loadFiles()
     } catch (err) {
@@ -214,10 +254,10 @@ export function Compose() {
   }
 
   const handleRollback = async (version) => {
-    if (!version.backupName || !selected) return
+    if (!version.backupName || !selected || guardFile(selected)) return
     if (!window.confirm('当前内容会先被备份，然后恢复到选定版本。是否继续？')) return
     try {
-      const response = await composeAPI.rollback(selected, version.backupName)
+      const response = await mutateFile(selected, () => composeAPI.rollback(selected, version.backupName))
       if (response.data.code !== 200) throw new Error(response.data.msg)
       flash('已回滚')
       await openFile(selected)
@@ -228,14 +268,16 @@ export function Compose() {
   }
 
   const handleDelete = async (name) => {
+    if (guardFile(name)) return
     if (!window.confirm(`确定删除 ${name}？`)) return
     try {
-      const response = await composeAPI.deleteFile(name)
+      const response = await mutateFile(name, () => composeAPI.deleteFile(name))
       if (response.data.code !== 200) throw new Error(response.data.msg)
       if (selected === name) {
         setSelected(null)
         setContent('')
         setOriginal('')
+        setContentHash(null)
       }
       flash('已删除')
       loadFiles()
@@ -253,7 +295,7 @@ export function Compose() {
     }
     setError('')
     try {
-      const response = await composeAPI.saveFile(name, TEMPLATE)
+      const response = await mutateFile(name, () => composeAPI.saveFile(name, TEMPLATE))
       if (response.data.code !== 200) throw new Error(response.data.msg)
       setShowNewDialog(false)
       setNewName('')
@@ -264,60 +306,31 @@ export function Compose() {
     }
   }
 
-  const pollJob = async (jobId) => {
-    // 内置执行器通过 docker.sock 直接执行；deploy 要先拉镜像再启动，
-    // 服务端对 pull 与 up 各自给 10 分钟，这里按两段的总时长放宽。
-    const deadline = Date.now() + 21 * 60 * 1000
-    while (Date.now() < deadline) {
-      await new Promise((resolve) => setTimeout(resolve, 2000))
-      try {
-        const response = await composeAPI.getJob(jobId)
-        if (response.data.code !== 200) throw new Error(response.data.msg)
-        const data = response.data.data
-        if (data.done) {
-          setJob(data.result)
-          setRunningAction('')
-          loadHistory()
-          return
-        }
-      } catch (err) {
-        setError(err.response?.data?.msg || err.message || '查询执行结果失败')
-        setRunningAction('')
-        return
-      }
-    }
-    setError('等待执行结果超时，请稍后在执行历史中查看')
-    setRunningAction('')
-  }
-
   const runAction = async (action) => {
-    if (!selected) return
+    if (!selected || guardFile(selected)) return
     setError('')
-    setJob(null)
-    setRunningAction(action)
-    try {
-      const response = await composeAPI.deploy(selected, action)
-      if (response.data.code !== 200) throw new Error(response.data.msg)
-      const jobId = response.data.data?.jobID
-      if (!jobId) throw new Error('未返回 jobID')
-      await pollJob(jobId)
-    } catch (err) {
-      setError(err.response?.data?.msg || err.message || '执行失败')
-      setRunningAction('')
-    }
+    const outcome = await controller.submit(selected, action)
+    if (outcome.reason) setError(outcome.reason)
   }
 
   const handleAction = async (action) => {
-    if (!selected) return
+    if (!selected || guardFile(selected)) return
     if (dirty && !window.confirm('有未保存的修改，将以已保存的内容执行。是否继续？')) {
       return
     }
     // 部署前先问清楚要不要拉取最新镜像，避免「以为更新了其实用的是旧镜像」
     if (action === 'deploy') {
-      setShowDeployDialog(true)
+      openDeployDialog()
       return
     }
     await runAction(action)
+  }
+
+  // 确认弹窗内展示待提交（已保存）内容的 SHA-256；WebCrypto 不可用时保持 null，整行隐藏。
+  const openDeployDialog = () => {
+    setShowDeployDialog(true)
+    setDeployFingerprint(null)
+    void sha256Hex(original).then((hex) => setDeployFingerprint(hex))
   }
 
   const confirmDeploy = async (pullLatest) => {
@@ -327,7 +340,7 @@ export function Compose() {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap gap-3 items-start justify-between">
         <div>
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">Compose</h2>
           <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -336,7 +349,11 @@ export function Compose() {
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={() => setShowHistory((prev) => !prev)}
+            onClick={() => {
+              if (!showHistory) void controller.reconcile()
+              setShowHistory((prev) => !prev)
+            }}
+            aria-expanded={showHistory}
             className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
           >
             <History className="w-4 h-4" />
@@ -359,6 +376,38 @@ export function Compose() {
           <button onClick={() => setError('')}>
             <X className="w-4 h-4" />
           </button>
+        </div>
+      )}
+
+      {(tasks.historyLoading || tasks.historyError || !tasks.restored || Object.values(tasks.submissions).some(Boolean)) && (
+        <div role="status" className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
+          {tasks.historyLoading && <Loader2 className="w-4 h-4 animate-spin shrink-0" />}
+          <span className="flex-1 min-w-0">
+            {Object.values(tasks.submissions).find((item) => item?.phase === 'unknown')?.message ||
+              tasks.historyError || (tasks.historyLoading ? '正在读取执行历史并恢复任务状态…' : '尚未完成历史对账')}
+          </span>
+          <button onClick={() => controller.reconcile()} className="underline shrink-0">恢复跟踪 / 历史对账</button>
+        </div>
+      )}
+
+      {Object.entries(tasks.submissions).filter(([, item]) => item?.phase === 'unknown').map(([filename]) => (
+        <div key={filename} className="flex flex-wrap gap-2 text-xs text-amber-700 dark:text-amber-300">
+          <span className="break-all">{filename}：提交结果未知，不会自动重发。</span>
+          <button className="underline" onClick={() => controller.releaseUnknown(filename,
+            window.confirm('请先查看执行历史并核验服务实际状态。确认原提交已结束或未执行后才可解除保护；此操作不会重发任务。是否已核验？'))}>已人工核验，解除提交保护</button>
+        </div>
+      ))}
+
+      {history.some((item) => ACTIVE_STATUSES.has(item.status)) && (
+        <div className="space-y-1 text-sm text-gray-600 dark:text-gray-300">
+          {history.filter((item) => ACTIVE_STATUSES.has(item.status)).map((item) => (
+            <div key={item.id} className="flex flex-wrap items-center gap-2">
+              {!item.notFound && <Loader2 className="w-4 h-4 animate-spin" />}
+              <span className="break-all">{item.filename} · {actionLabel(item.action)} · {item.notFound ? '任务未找到 / 结果待确认' : STATUS_LABELS[item.status]}</span>
+              {item.queryError && <span className="text-amber-600 dark:text-amber-400">{item.queryError}</span>}
+              <button onClick={() => controller.select(item.id)} aria-label={`查看任务详情 ${item.id}`} className="underline">查看详情</button>
+            </div>
+          ))}
         </div>
       )}
 
@@ -398,7 +447,9 @@ export function Compose() {
                     event.stopPropagation()
                     handleDelete(file.name)
                   }}
-                  className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600"
+                  disabled={controller.blocked(file.name)}
+                  aria-label={`删除 ${file.name}`}
+                  className="opacity-0 group-hover:opacity-100 disabled:opacity-30 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -451,7 +502,7 @@ export function Compose() {
             </button>
             <button
               onClick={handleSave}
-              disabled={!selected || !dirty || saving}
+              disabled={!selected || !dirty || saving || selectedBusy}
               className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg bg-blue-600 text-white disabled:opacity-50 hover:bg-blue-700"
             >
               {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
@@ -464,7 +515,7 @@ export function Compose() {
                 <button
                   key={action.key}
                   onClick={() => handleAction(action.key)}
-                  disabled={!selected || Boolean(runningAction)}
+                  disabled={!selected || selectedBusy}
                   className={cn(
                     'flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg border disabled:opacity-50',
                     'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700',
@@ -546,6 +597,7 @@ export function Compose() {
                 {version.backupName && (
                   <button
                     onClick={() => handleRollback(version)}
+                    disabled={selectedBusy}
                     className="px-2.5 py-1 text-xs rounded-lg border border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700"
                   >
                     回滚
@@ -558,23 +610,45 @@ export function Compose() {
       )}
 
       {/* 执行结果 */}
-      {job && (
+      {task && (
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700">
-            {job.success ? (
+          <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+            {task.notFound ? (
+              <AlertTriangle className="w-4 h-4 text-amber-500" />
+            ) : task.status === 'succeeded' ? (
               <CheckCircle2 className="w-4 h-4 text-green-600" />
-            ) : (
+            ) : task.status === 'failed' ? (
               <XCircle className="w-4 h-4 text-red-600" />
+            ) : task.status === 'interrupted' ? (
+              <AlertTriangle className="w-4 h-4 text-amber-500" />
+            ) : (
+              <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
             )}
-            <span className="text-sm font-medium">
-              {actionLabel(job.action)} {job.filename} · {job.success ? '成功' : '失败'}
+            <span className="text-sm font-medium break-all">
+              {actionLabel(task.action)} {task.filename} · {task.notFound ? '任务未找到 / 结果待确认' : STATUS_LABELS[task.status]}
             </span>
             <div className="flex-1" />
-            <button onClick={() => setJob(null)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+            <button onClick={() => controller.reconcile()} className="text-xs underline">刷新任务状态</button>
+            <button aria-label="关闭任务详情" onClick={() => controller.select(null)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
               <X className="w-4 h-4" />
             </button>
           </div>
-          {job.steps?.length > 0 && (
+          <div className="px-3 py-2 text-xs text-gray-500 break-all">
+            任务 ID：{task.id}
+            {jobFingerprint && (
+              <>
+                {' · '}配置指纹：<code className="font-mono" title={jobFingerprint}>{shortFingerprint(jobFingerprint, 12)}</code>
+              </>
+            )}
+          </div>
+          {modifiedAfterDeploy && (
+            <p className="px-3 pb-2 text-xs text-amber-600 dark:text-amber-400">部署后文件已修改</p>
+          )}
+          {task.queryError && <p role="status" className="px-3 py-2 text-xs text-amber-600 dark:text-amber-400">{task.queryError}</p>}
+          {task.notFound && !task.guardReleased && <button className="px-3 py-2 text-xs underline text-amber-600" onClick={() => controller.releaseNotFound(task.id,
+            window.confirm('任务未找到不代表执行失败。请核验服务实际状态，确认已结束或未执行后再解除保护。是否已核验？'))}>已人工核验，解除任务保护</button>}
+          {!job && <p className="px-3 py-2 text-xs text-gray-500">{ACTIVE_STATUSES.has(task.status) && !task.notFound ? '正在跟踪任务，尚无最终输出' : '结果详情待确认，请刷新任务状态'}</p>}
+          {job?.steps?.length > 0 && (
             <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700 space-y-1.5">
               {job.steps.map((step, index) => (
                 <div key={`${step.stage}-${index}`} className="flex items-start gap-2 text-xs">
@@ -595,9 +669,33 @@ export function Compose() {
               ))}
             </div>
           )}
-          <pre className="p-3 text-xs font-mono whitespace-pre-wrap break-all max-h-60 overflow-auto text-gray-700 dark:text-gray-300">
+          {servicesView?.kind === 'services' && (
+            <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+              <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">服务状态</p>
+              <div className="flex flex-wrap gap-1.5">
+                {servicesView.services.map((service, index) => (
+                  <span
+                    key={`${service?.name || 'service'}-${index}`}
+                    title={typeof service?.health === 'string' && service.health
+                      ? `${service.name} ${service.state}（health: ${service.health}）`
+                      : `${service?.name || ''} ${service?.state || ''}`.trim()}
+                    className={cn('inline-flex items-center px-2 py-0.5 rounded font-mono text-[10px]',
+                      SERVICE_TONE_CLASSES[serviceBadgeTone(service)])}
+                  >
+                    {service?.name || '未知服务'} · {service?.state || '未知状态'}{typeof service?.health === 'string' && service.health ? ` · ${service.health}` : ''}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+          {servicesView?.kind === 'legacy' && (
+            <p className="px-3 py-2 border-b border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+              服务端未提供服务状态（旧版本）
+            </p>
+          )}
+          {job && <pre className="p-3 text-xs font-mono whitespace-pre-wrap break-all max-h-60 overflow-auto text-gray-700 dark:text-gray-300">
             {job.output || '(无输出)'}
-          </pre>
+          </pre>}
         </div>
       )}
 
@@ -606,31 +704,29 @@ export function Compose() {
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
           <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700">
             <span className="text-sm font-medium">执行历史</span>
-            <button onClick={() => setShowHistory(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
+            <button onClick={() => controller.reconcile()} className="text-xs underline">刷新执行历史</button>
+            <button aria-label="关闭执行历史" onClick={() => setShowHistory(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
               <X className="w-4 h-4" />
             </button>
           </div>
           <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
-            {history.length === 0 && (
+            {tasks.historyLoading && <p role="status" className="px-3 py-2 text-xs text-gray-500">正在刷新执行历史…</p>}
+            {tasks.historyError && <div role="alert" className="px-3 py-2 text-xs text-amber-600 dark:text-amber-400">{tasks.historyError} <button onClick={() => controller.reconcile()} className="underline">重试读取执行历史</button></div>}
+            {history.length === 0 && !tasks.historyLoading && !tasks.historyError && (
               <p className="px-3 py-6 text-center text-xs text-gray-500">暂无执行记录</p>
             )}
             {history.map((item) => (
               <div key={item.id} className="px-3 py-2">
-                <div className="flex items-center gap-2 text-xs">
-                  {item.success ? (
-                    <CheckCircle2 className="w-3.5 h-3.5 text-green-600" />
-                  ) : (
-                    <XCircle className="w-3.5 h-3.5 text-red-600" />
-                  )}
+                <div className="flex flex-wrap items-center gap-2 text-xs">
+                  <span className={cn('font-medium', item.status === 'succeeded' ? 'text-green-600' : item.status === 'failed' ? 'text-red-600' : 'text-amber-600')}>
+                    {item.notFound ? '任务未找到 / 结果待确认' : STATUS_LABELS[item.status]}
+                  </span>
                   <span className="font-medium text-gray-800 dark:text-gray-200">{actionLabel(item.action)}</span>
-                  <span className="text-gray-600 dark:text-gray-400">{item.filename}</span>
-                  <span className="text-gray-400">{new Date(item.finishedAt).toLocaleString('zh-CN')}</span>
+                  <span className="text-gray-600 dark:text-gray-400 break-all">{item.filename}</span>
+                  <span className="text-gray-400">{item.createdAt || item.result?.finishedAt ? new Date(item.createdAt || item.result.finishedAt).toLocaleString('zh-CN') : ''}</span>
+                  <button onClick={() => controller.select(item.id)} aria-label={`查看任务详情 ${item.id}`} className="underline text-blue-600 dark:text-blue-400">查看详情</button>
                 </div>
-                {item.output && (
-                  <pre className="mt-1 text-[10px] font-mono text-gray-500 whitespace-pre-wrap break-all max-h-20 overflow-hidden">
-                    {item.output}
-                  </pre>
-                )}
+                {item.queryError && <p className="text-xs text-amber-600 dark:text-amber-400">{item.queryError}</p>}
               </div>
             ))}
           </div>
@@ -647,6 +743,12 @@ export function Compose() {
             <p className="text-sm text-gray-600 dark:text-gray-300">
               是否先拉取最新镜像？
             </p>
+            {deployFingerprint && (
+              <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400 break-all">
+                提交配置指纹: <code className="font-mono text-gray-700 dark:text-gray-300" title={deployFingerprint}>{shortFingerprint(deployFingerprint, DEPLOY_FINGERPRINT_DISPLAY_LENGTH)}…</code>
+                （以服务端保存内容为准）
+              </p>
+            )}
             <div className="mt-2 rounded-lg bg-gray-50 dark:bg-gray-700/50 px-3 py-2 text-[11px] text-gray-600 dark:text-gray-400 space-y-1">
               <p>
                 <span className="font-medium text-gray-700 dark:text-gray-200">拉取最新</span>
