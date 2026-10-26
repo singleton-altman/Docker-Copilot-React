@@ -826,7 +826,7 @@ export function Containers() {
           onClick={() => setFilterStatus(null)}
           className={cn(
             "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === null ? "ring-2 ring-primary-500 bg-primary-500/5 dark:bg-primary-900/10" : ""
+            filterStatus === null ? "ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/10" : ""
           )}
         >
           <div className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
@@ -838,7 +838,7 @@ export function Containers() {
           onClick={() => setFilterStatus(filterStatus === 'running' ? null : 'running')}
           className={cn(
             "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'running' ? "ring-2 ring-primary-500 bg-primary-500/5 dark:bg-primary-900/10" : ""
+            filterStatus === 'running' ? "ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/10" : ""
           )}
         >
           <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
@@ -850,7 +850,7 @@ export function Containers() {
           onClick={() => setFilterStatus(filterStatus === 'stopped' ? null : 'stopped')}
           className={cn(
             "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'stopped' ? "ring-2 ring-primary-500 bg-primary-500/5 dark:bg-primary-900/10" : ""
+            filterStatus === 'stopped' ? "ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/10" : ""
           )}
         >
           <div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400 mb-2">
@@ -862,7 +862,7 @@ export function Containers() {
           onClick={() => setFilterStatus(filterStatus === 'update' ? null : 'update')}
           className={cn(
             "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'update' ? "ring-2 ring-primary-500 bg-primary-500/5 dark:bg-primary-900/10" : ""
+            filterStatus === 'update' ? "ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/10" : ""
           )}
         >
           <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">
@@ -875,72 +875,47 @@ export function Containers() {
       {/* 容器列表 */}
       <div className="px-4 sm:px-6 py-4">
         {(filterStatus || selectedContainers.length > 0) && (
-          <div className="mb-3 p-2.5 bg-primary-500/10 dark:bg-primary-900/20 rounded-xl flex flex-wrap items-center gap-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
-                  {filterStatus && (
-                    <>
-                      筛选中：
-                      {filterStatus === 'running' && '运行中容器 '}
-                      {filterStatus === 'stopped' && '已停止容器 '}
-                      {filterStatus === 'update' && '有更新容器 '}
-                    </>
-                  )}
-                  {!filterStatus && selectedContainers.length > 0 && (
-                    <>
-                      已选中 {selectedContainers.length} 个容器（使用 Ctrl/Cmd+点击 来切换选择，或直接点击卡片打开详情）
-                    </>
-                  )}
-                  {filterStatus && selectedContainers.length > 0 && (
-                    <>
-                      &nbsp;·&nbsp;已选中 {selectedContainers.length} 个容器
-                    </>
-                  )}
-                </span>
-                {filterStatus && (
-                  <>
-                    <button
-                      onClick={() => {
-                        setFilterStatus(null)
-                        setSelectedContainers([])
-                        setIsBatchMode(false)
-                      }}
-                      className="px-2 py-0.5 text-xs font-medium text-primary-600 dark:text-primary-300 hover:text-primary-800 dark:hover:text-primary-100 bg-primary-500/10 dark:bg-primary-800/50 rounded transition-colors"
-                    >
-                      清除筛选
-                    </button>
-                    <button
-                      onClick={() => {
-                        const filteredContainers = containers.filter((container) => {
-                          if (!filterStatus) return true
-                          if (filterStatus === 'running') return container.status && container.status.toLowerCase() === 'running'
-                          if (filterStatus === 'stopped') return container.status && container.status.toLowerCase() !== 'running'
-                          if (filterStatus === 'update') return container.haveUpdate
-                          return true
-                        })
-                        setSelectedContainers(filteredContainers.map(c => c.id))
-                        setIsBatchMode(true)
-                      }}
-                      className="px-2 py-0.5 text-xs font-medium text-primary-600 dark:text-primary-300 hover:text-primary-800 dark:hover:text-primary-100 bg-primary-500/10 dark:bg-primary-800/50 rounded transition-colors"
-                    >
-                      全选结果
-                    </button>
-                  </>
-                )}
-              </div>
-              {selectedContainers.length > 0 && !filterStatus && (
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            {filterStatus && (
+              <span className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full text-xs font-medium bg-primary-500/10 text-primary-700 dark:text-primary-300 ring-1 ring-inset ring-primary-500/30">
+                {filterStatus === 'running' && '运行中'}
+                {filterStatus === 'stopped' && '已停止'}
+                {filterStatus === 'update' && '有更新'}
                 <button
-                  onClick={() => setSelectedContainers([])}
-                  className="px-2 py-0.5 text-xs font-medium text-primary-600 dark:text-primary-300 hover:text-primary-800 dark:hover:text-primary-100 bg-primary-500/10 dark:bg-primary-800/50 rounded transition-colors"
+                  onClick={() => { setFilterStatus(null); setIsBatchMode(false) }}
+                  className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-primary-500/20 transition-colors"
+                  aria-label="清除筛选"
+                  title="清除筛选"
                 >
-                  取消选择
+                  ×
                 </button>
-              )}
-            </div>
+              </span>
+            )}
+            {selectedContainers.length > 0 && (
+              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/10 text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/30">
+                已选 {selectedContainers.length} 个 · Ctrl/Cmd+点击可切换
+              </span>
+            )}
+            {filterStatus && (
+              <button
+                onClick={() => {
+                  const filteredContainers = containers.filter((container) => {
+                    if (filterStatus === 'running') return container.status && container.status.toLowerCase() === 'running'
+                    if (filterStatus === 'stopped') return container.status && container.status.toLowerCase() !== 'running'
+                    if (filterStatus === 'update') return container.haveUpdate
+                    return true
+                  })
+                  setSelectedContainers(filteredContainers.map(c => c.id))
+                  setIsBatchMode(true)
+                }}
+                className="px-2.5 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-500/10 hover:bg-gray-500/20 rounded-full transition-colors"
+              >
+                全选结果
+              </button>
+            )}
           </div>
         )}
-        
+
         {containers.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {containers
