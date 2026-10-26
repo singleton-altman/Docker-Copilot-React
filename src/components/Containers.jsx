@@ -826,7 +826,7 @@ export function Containers() {
           onClick={() => setFilterStatus(null)}
           className={cn(
             "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === null ? "ring-2 ring-primary-400 dark:ring-primary-500" : ""
+            filterStatus === null ? "ring-2 ring-primary-500 bg-primary-500/5 dark:bg-primary-900/10" : ""
           )}
         >
           <div className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
@@ -835,10 +835,10 @@ export function Containers() {
           <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">总容器数</div>
         </button>
         <button
-          onClick={() => setFilterStatus('running')}
+          onClick={() => setFilterStatus(filterStatus === 'running' ? null : 'running')}
           className={cn(
             "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'running' ? "ring-2 ring-green-400 dark:ring-green-500" : ""
+            filterStatus === 'running' ? "ring-2 ring-primary-500 bg-primary-500/5 dark:bg-primary-900/10" : ""
           )}
         >
           <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
@@ -847,10 +847,10 @@ export function Containers() {
           <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">运行中</div>
         </button>
         <button
-          onClick={() => setFilterStatus('stopped')}
+          onClick={() => setFilterStatus(filterStatus === 'stopped' ? null : 'stopped')}
           className={cn(
             "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'stopped' ? "ring-2 ring-red-400 dark:ring-red-500" : ""
+            filterStatus === 'stopped' ? "ring-2 ring-primary-500 bg-primary-500/5 dark:bg-primary-900/10" : ""
           )}
         >
           <div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400 mb-2">
@@ -859,10 +859,10 @@ export function Containers() {
           <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">已停止</div>
         </button>
         <button
-          onClick={() => setFilterStatus('update')}
+          onClick={() => setFilterStatus(filterStatus === 'update' ? null : 'update')}
           className={cn(
             "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'update' ? "ring-2 ring-yellow-400 dark:ring-yellow-500" : ""
+            filterStatus === 'update' ? "ring-2 ring-primary-500 bg-primary-500/5 dark:bg-primary-900/10" : ""
           )}
         >
           <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">
@@ -875,10 +875,10 @@ export function Containers() {
       {/* 容器列表 */}
       <div className="px-4 sm:px-6 py-4">
         {(filterStatus || selectedContainers.length > 0) && (
-          <div className="mb-4 p-3 bg-primary-500/10 border border-primary-500/20 rounded-lg">
+          <div className="mb-3 p-2.5 bg-primary-500/10 dark:bg-primary-900/20 rounded-xl flex flex-wrap items-center gap-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-primary-700 dark:text-primary-300">
+                <span className="text-xs font-medium text-primary-700 dark:text-primary-300">
                   {filterStatus && (
                     <>
                       筛选中：
