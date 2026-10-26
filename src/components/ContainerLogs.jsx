@@ -302,9 +302,9 @@ export function ContainerLogsModal({ container, onClose }) {
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-5xl h-[90vh] flex flex-col">
+      <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-5xl h-[90vh] flex flex-col">
         {/* 标题栏 */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-gray-800">
           <div className="min-w-0">
             <h3 className="font-semibold text-gray-900 dark:text-white truncate">
               日志 · {container.name}
@@ -328,7 +328,7 @@ export function ContainerLogsModal({ container, onClose }) {
         </div>
 
         {/* 工具栏 */}
-        <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="flex flex-wrap items-center gap-2 px-4 py-2 border-b border-gray-200 dark:border-gray-800">
           <select
             value={tail}
             onChange={(e) => setTail(Number(e.target.value))}
@@ -374,7 +374,7 @@ export function ContainerLogsModal({ container, onClose }) {
             className={cn(
               'flex items-center gap-1 px-2 py-1 text-xs rounded-lg border',
               follow
-                ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                ? 'border-primary-500 text-primary-600 dark:text-primary-400'
                 : 'border-gray-300 dark:border-gray-600 text-gray-500'
             )}
             title="自动滚动到最新日志"
@@ -471,7 +471,7 @@ export function ContainerLogsModal({ container, onClose }) {
         </div>
 
         {/* 底部信息 */}
-        <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-700 text-xs text-gray-500">
+        <div className="flex items-center justify-between px-4 py-2 border-t border-gray-200 dark:border-gray-800 text-xs text-gray-500">
           <span>
             显示 {visibleLines.length} / {rawLines.length} 行
           </span>

@@ -6,10 +6,14 @@
   html {
     font-family: 'Inter', system-ui, sans-serif;
   }
-  
+
   body {
-    @apply antialiased;
+    @apply antialiased bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100;
   }
+
+  /* 深色模式下的标题排版更收紧，突出层级 */
+  :root { color-scheme: light; }
+  .dark { color-scheme: dark; }
 
   /* 安全区域支持 */
   @supports (padding: max(0px)) {
@@ -28,63 +32,78 @@
     }
   }
   .btn {
-    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+    @apply inline-flex items-center justify-center px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:ring-offset-gray-950;
   }
-  
+
   .btn-primary {
-    @apply btn bg-primary-600 text-white hover:bg-primary-700 focus:ring-primary-500 dark:bg-primary-500 dark:hover:bg-primary-600;
+    @apply btn bg-primary-600 text-white hover:bg-primary-500 focus:ring-primary-500/50
+      dark:bg-primary-500 dark:text-gray-950 dark:hover:bg-primary-400 dark:focus:ring-primary-400/50;
   }
-  
+
   .btn-secondary {
-    @apply btn bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-500 dark:bg-gray-700 dark:text-gray-100 dark:hover:bg-gray-600;
+    @apply btn bg-gray-200 text-gray-900 hover:bg-gray-300 focus:ring-gray-400/50
+      dark:bg-gray-800 dark:text-gray-100 dark:border dark:border-gray-700/80 dark:hover:bg-gray-700/80 dark:focus:ring-gray-500/40;
   }
-  
+
   .btn-danger {
-    @apply btn bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 dark:bg-red-500 dark:hover:bg-red-600;
+    @apply btn bg-red-600 text-white hover:bg-red-500 focus:ring-red-500/50
+      dark:bg-red-500/90 dark:hover:bg-red-500 dark:focus:ring-red-400/50;
   }
-  
+
+  /* 卡片：深色端为石墨面板 + 发丝边，浅色端保持白卡。悬停仅提升边框亮度，不做大阴影。 */
   .card {
-    @apply bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-200 hover:shadow-md;
+    @apply bg-white dark:bg-gray-900 rounded-xl border border-gray-200/90 dark:border-gray-800
+      shadow-sm dark:shadow-none transition-all duration-200
+      hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700;
   }
-  
+
   .input {
-    @apply w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+    @apply w-full px-3 py-2 rounded-lg bg-white dark:bg-gray-900/60
+      border border-gray-300 dark:border-gray-700
+      text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500
+      focus:outline-none focus:ring-2 focus:ring-primary-500/40 focus:border-primary-500
+      dark:focus:border-primary-500 transition-all duration-200;
   }
-  
+
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ring-1 ring-inset;
   }
-  
+
+  /* 徽标：半透明底 + 同色发丝圈，深浅色一致的高级质感 */
   .badge-success {
-    @apply badge bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200;
+    @apply badge bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-emerald-600/20 dark:ring-emerald-400/20;
   }
-  
+
   .badge-warning {
-    @apply badge bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200;
+    @apply badge bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-amber-600/20 dark:ring-amber-400/20;
   }
-  
+
   .badge-error {
-    @apply badge bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200;
+    @apply badge bg-red-500/10 text-red-700 dark:text-red-400 ring-red-600/20 dark:ring-red-400/20;
   }
-  
+
   .badge-info {
-    @apply badge bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200;
+    @apply badge bg-gray-500/10 text-gray-700 dark:text-gray-300 ring-gray-600/20 dark:ring-gray-400/20;
   }
 
   /* 图标按钮样式 */
   .btn-icon-secondary {
-    @apply p-2 rounded-lg text-gray-600 hover:text-gray-900 hover:bg-gray-100 dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-700 transition-colors;
+    @apply p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-200/70
+      dark:text-gray-400 dark:hover:text-white dark:hover:bg-gray-800 transition-colors;
   }
 
   .btn-icon-error {
-    @apply p-2 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 transition-colors;
+    @apply p-2 rounded-lg text-red-600 hover:text-red-700 hover:bg-red-500/10
+      dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-500/10 transition-colors;
   }
 
   .btn-icon-success {
-    @apply p-2 rounded-lg text-green-600 hover:text-green-700 hover:bg-green-50 dark:text-green-400 dark:hover:text-green-300 dark:hover:bg-green-900/20 transition-colors;
+    @apply p-2 rounded-lg text-emerald-600 hover:text-emerald-700 hover:bg-emerald-500/10
+      dark:text-emerald-400 dark:hover:text-emerald-300 dark:hover:bg-emerald-500/10 transition-colors;
   }
 
   .btn-icon-primary {
-    @apply p-2 rounded-lg text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:text-blue-300 dark:hover:bg-blue-900/20 transition-colors;
+    @apply p-2 rounded-lg text-primary-600 hover:text-primary-700 hover:bg-primary-500/10
+      dark:text-primary-400 dark:hover:text-primary-300 dark:hover:bg-primary-500/10 transition-colors;
   }
 }

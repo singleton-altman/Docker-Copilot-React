@@ -103,13 +103,13 @@ export function Icons() {
   return (
     <div className="max-w-7xl mx-auto">
       {/* 页面头部 */}
-        <div className="px-4 sm:px-6 py-2 sm:py-3 border-b border-gray-200 dark:border-gray-700">
+        <div className="px-4 sm:px-6 py-2 sm:py-3 border-b border-gray-200 dark:border-gray-800">
         <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-1">图标库</h2>
         <p className="text-gray-600 dark:text-gray-400">浏览和管理Docker镜像图标</p>
       </div>
 
       {/* 搜索和过滤 */}
-      <div className="px-4 sm:px-6 py-4 space-y-4 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+      <div className="px-4 sm:px-6 py-4 space-y-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
         {/* 搜索框 */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -151,7 +151,7 @@ export function Icons() {
                 className={cn(
                   "px-3 py-2 text-sm rounded-lg transition-colors flex items-center gap-1.5",
                   selectedCategory === 'favorites'
-                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200"
+                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-600/20 dark:ring-amber-400/20"
                     : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
                 )}
               >
@@ -207,7 +207,7 @@ export function Icons() {
                     </p>
                   </div>
                   
-                  <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-700 w-full opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center justify-center gap-2 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 w-full opacity-0 group-hover:opacity-100 transition-opacity">
                     <button
                       onClick={(e) => {
                         e.stopPropagation()
@@ -254,7 +254,7 @@ export function Icons() {
       {/* 图标详情弹窗 */}
       {selectedIcon && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -273,7 +273,7 @@ export function Icons() {
                   <img
                     src={selectedIcon.url}
                     alt={selectedIcon.name}
-                    className="w-32 h-32 object-contain rounded-lg border border-gray-200 dark:border-gray-700"
+                    className="w-32 h-32 object-contain rounded-lg border border-gray-200 dark:border-gray-800"
                   />
                 </div>
                 
@@ -281,7 +281,7 @@ export function Icons() {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     图标名称
                   </label>
-                  <div className="p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white font-medium">
+                  <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white font-medium">
                     {selectedIcon.name}
                   </div>
                 </div>
@@ -295,7 +295,7 @@ export function Icons() {
                       type="text"
                       value={selectedIcon.url}
                       readOnly
-                      className="flex-1 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg text-gray-900 dark:text-white font-mono text-sm border border-gray-200 dark:border-gray-600"
+                      className="flex-1 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg text-gray-900 dark:text-white font-mono text-sm border border-gray-200 dark:border-gray-700"
                     />
                     <button
                       onClick={() => copyToClipboard(selectedIcon.url, selectedIcon.name)}
@@ -322,7 +322,7 @@ export function Icons() {
                     className={cn(
                       "flex-1 px-4 py-2 rounded-lg transition-colors",
                       favorites.includes(selectedIcon.name)
-                        ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200 hover:bg-yellow-200 dark:hover:bg-yellow-800"
+                        ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-600/20 dark:ring-amber-400/20 hover:bg-amber-500/20"
                         : "bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600"
                     )}
                   >

@@ -6,7 +6,8 @@ export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
     const saved = localStorage.getItem('docker_copilot_theme')
     if (saved === 'light' || saved === 'dark') return saved
-    return 'system'
+    // 产品定位为深色优先的运维台；未做选择时默认深色
+    return 'dark'
   })
 
   useEffect(() => {

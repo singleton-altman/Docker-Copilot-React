@@ -683,8 +683,8 @@ export function Containers() {
       {/* 自定义确认弹窗 */}
       {confirmModal.isOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full">
-            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-xl border border-gray-200 dark:border-gray-800 max-w-md w-full">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
                 {confirmModal.title}
               </h3>
@@ -703,7 +703,7 @@ export function Containers() {
                 {confirmModal.message}
               </p>
             </div>
-            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/30 flex justify-end space-x-3">
+            <div className="px-6 py-4 border-t border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 flex justify-end space-x-3">
               <button
                 onClick={() => {
                   if (confirmModal.onCancel) confirmModal.onCancel();
@@ -875,10 +875,10 @@ export function Containers() {
       {/* 容器列表 */}
       <div className="px-4 sm:px-6 py-4">
         {(filterStatus || selectedContainers.length > 0) && (
-          <div className="mb-4 p-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <div className="mb-4 p-3 bg-primary-500/10 border border-primary-500/20 rounded-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-blue-700 dark:text-blue-300">
+                <span className="text-sm text-primary-700 dark:text-primary-300">
                   {filterStatus && (
                     <>
                       筛选中：
@@ -906,7 +906,7 @@ export function Containers() {
                         setSelectedContainers([])
                         setIsBatchMode(false)
                       }}
-                      className="px-2 py-0.5 text-xs font-medium text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100 bg-blue-100 dark:bg-blue-800/50 rounded transition-colors"
+                      className="px-2 py-0.5 text-xs font-medium text-primary-600 dark:text-primary-300 hover:text-primary-800 dark:hover:text-primary-100 bg-primary-500/10 dark:bg-primary-800/50 rounded transition-colors"
                     >
                       清除筛选
                     </button>
@@ -922,7 +922,7 @@ export function Containers() {
                         setSelectedContainers(filteredContainers.map(c => c.id))
                         setIsBatchMode(true)
                       }}
-                      className="px-2 py-0.5 text-xs font-medium text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100 bg-blue-100 dark:bg-blue-800/50 rounded transition-colors"
+                      className="px-2 py-0.5 text-xs font-medium text-primary-600 dark:text-primary-300 hover:text-primary-800 dark:hover:text-primary-100 bg-primary-500/10 dark:bg-primary-800/50 rounded transition-colors"
                     >
                       全选结果
                     </button>
@@ -932,7 +932,7 @@ export function Containers() {
               {selectedContainers.length > 0 && !filterStatus && (
                 <button
                   onClick={() => setSelectedContainers([])}
-                  className="px-2 py-0.5 text-xs font-medium text-blue-600 dark:text-blue-300 hover:text-blue-800 dark:hover:text-blue-100 bg-blue-100 dark:bg-blue-800/50 rounded transition-colors"
+                  className="px-2 py-0.5 text-xs font-medium text-primary-600 dark:text-primary-300 hover:text-primary-800 dark:hover:text-primary-100 bg-primary-500/10 dark:bg-primary-800/50 rounded transition-colors"
                 >
                   取消选择
                 </button>
@@ -970,14 +970,14 @@ export function Containers() {
                       "card relative overflow-hidden transition-all duration-200 hover:shadow-lg border rounded-2xl p-4 cursor-pointer active:scale-98",
                       isSelected
                         ? "border-primary-500 bg-primary-50 dark:bg-primary-900/20 shadow-md"
-                        : "border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600"
+                        : "border-gray-200 dark:border-gray-800 hover:border-primary-300 dark:hover:border-primary-600"
                     )}
                   >
                     {/* 背景进度条 */}
                     {containerActions[container.id]?.loading && containerActions[container.id]?.action === 'update' && (
                       <div className="absolute inset-0 pointer-events-none rounded-2xl overflow-hidden">
                         <div 
-                          className="absolute top-0 left-0 bottom-0 bg-gradient-to-r from-primary-500/30 via-primary-400/30 to-primary-500/30 transition-all duration-500 ease-out"
+                          className="absolute top-0 left-0 bottom-0 bg-primary-500/30 transition-all duration-500 ease-out"
                           style={{
                             width: `${containerActions[container.id].percentage || 0}%`
                           }}
@@ -1021,7 +1021,7 @@ export function Containers() {
                                 onError={(e) => {
                                   e.target.style.display = 'none';
                                   e.target.parentElement.innerHTML = `
-                                    <div class="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm">
+                                    <div class="h-12 w-12 bg-primary-600 rounded-xl flex items-center justify-center shadow-sm">
                                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-white">
                                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                                       </svg>
@@ -1032,7 +1032,7 @@ export function Containers() {
                             );
                           } else {
                             return (
-                              <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+                              <div className="h-12 w-12 bg-primary-600 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
                                 <Package className="h-6 w-6 text-white" />
                               </div>
                             );
@@ -1057,7 +1057,7 @@ export function Containers() {
                                 {container.name}
                               </h3>
                               {container.haveUpdate && (
-                                <span className="ml-2 inline-flex items-center justify-center px-1.5 sm:px-2 py-0.5 rounded-full bg-gradient-to-r from-yellow-400 to-yellow-500 dark:from-yellow-500 dark:to-yellow-600 animate-pulse shadow-md flex-shrink-0" title="有新版本可更新">
+                                <span className="ml-2 inline-flex items-center justify-center px-1.5 sm:px-2 py-0.5 rounded-full bg-yellow-500 animate-pulse shadow-md flex-shrink-0" title="有新版本可更新">
                                   <img 
                                     src={icons8Img} 
                                     alt="更新" 
@@ -1079,7 +1079,7 @@ export function Containers() {
                         {/* 统一高度的信息行 - 显示运行时间或状态 */}
                         <div className="h-5 mt-1">
                           {containerActions[container.id]?.loading && containerActions[container.id]?.progress ? (
-                            <p className="text-xs text-blue-600 dark:text-blue-400 truncate flex items-center gap-1">
+                            <p className="text-xs text-primary-600 dark:text-primary-400 truncate flex items-center gap-1">
                               <RefreshCw className="h-3 w-3 animate-spin flex-shrink-0" />
                               <span>{containerActions[container.id].progress}</span>
                             </p>
@@ -1103,7 +1103,7 @@ export function Containers() {
                                 className="flex items-center justify-center gap-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-1.5 py-1 border border-gray-100 dark:border-gray-700/60"
                                 title={`CPU 占用 ${stats.cpuPercent.toFixed(2)}%`}
                               >
-                                <Cpu className="h-3 w-3 text-purple-500 flex-shrink-0" />
+                                <Cpu className="h-3 w-3 text-primary-500 flex-shrink-0" />
                                 <span className="font-medium text-gray-700 dark:text-gray-200 truncate tabular-nums">
                                   {stats.cpuPercent.toFixed(1)}%
                                 </span>
@@ -1112,7 +1112,7 @@ export function Containers() {
                                 className="flex items-center justify-center gap-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-1.5 py-1 border border-gray-100 dark:border-gray-700/60"
                                 title={`内存 ${formatBytes(stats.memoryUsage)} / ${formatBytes(stats.memoryLimit)}（${stats.memoryPercent.toFixed(1)}%）`}
                               >
-                                <MemoryStick className="h-3 w-3 text-blue-500 flex-shrink-0" />
+                                <MemoryStick className="h-3 w-3 text-primary-500 flex-shrink-0" />
                                 <span className="font-medium text-gray-700 dark:text-gray-200 truncate tabular-nums">
                                   {formatBytes(stats.memoryUsage)}
                                 </span>
@@ -1148,7 +1148,7 @@ export function Containers() {
                           {containerActions[container.id].action === 'update' && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleCancelUpdate(container.name) }}
-                              className="ml-1 px-2 py-0.5 rounded-md text-[11px] font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800 transition-colors"
+                              className="ml-1 px-2 py-0.5 rounded-md text-[11px] font-medium text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-colors"
                               title="中断更新"
                             >
                               中断
@@ -1161,7 +1161,7 @@ export function Containers() {
                             <>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleContainerAction(container.id, 'stop') }}
-                                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium"
+                                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium"
                                 title="停止"
                               >
                                 <Square className="h-4 w-4" />
@@ -1169,7 +1169,7 @@ export function Containers() {
                               </button>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleContainerAction(container.id, 'restart') }}
-                                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium"
+                                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-primary-600 dark:text-primary-400 bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/20 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium"
                                 title="重启"
                               >
                                 <RotateCcw className="h-4 w-4" />
@@ -1179,7 +1179,7 @@ export function Containers() {
                           ) : (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleContainerAction(container.id, 'start') }}
-                              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium"
+                              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium"
                               title="启动"
                             >
                               <Play className="h-4 w-4" />
@@ -1190,8 +1190,8 @@ export function Containers() {
                           <button
                             onClick={(e) => { e.stopPropagation(); handleUpdateContainer(container.id) }}
                             className={cn(
-                              "flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 border rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium",
-                              container.haveUpdate ? "border-yellow-400 dark:border-yellow-600" : "border-purple-200 dark:border-purple-800"
+                              "flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-primary-600 dark:text-primary-400 bg-primary-500/10 hover:bg-primary-500/20 border rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium",
+                              container.haveUpdate ? "border-yellow-400 dark:border-yellow-600" : "border-primary-200 dark:border-primary-800"
                             )}
                             title="更新"
                           >
@@ -1220,7 +1220,7 @@ export function Containers() {
             </p>
             <button
               onClick={() => refetch()}
-              className="mt-3 px-4 py-2 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+              className="mt-3 px-4 py-2 text-sm rounded-lg bg-primary-600 text-white hover:bg-primary-700"
             >
               重试
             </button>
@@ -1475,7 +1475,7 @@ function ContainerDetailModal({ container, onClose, onRename, onUpdate, onAction
             const parent = e.target.parentElement;
             if (parent) {
               parent.innerHTML = `
-                <div class="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                <div class="h-12 w-12 bg-primary-600 rounded-xl flex items-center justify-center">
                   <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-white">
                     <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
                     <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
@@ -1489,7 +1489,7 @@ function ContainerDetailModal({ container, onClose, onRename, onUpdate, onAction
       );
     } else {
       return (
-        <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+        <div className="h-12 w-12 bg-primary-600 rounded-xl flex items-center justify-center">
           <Package className="h-6 w-6 text-white" />
         </div>
       );
@@ -1498,9 +1498,9 @@ function ContainerDetailModal({ container, onClose, onRename, onUpdate, onAction
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden">
+      <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-800 w-full max-w-md overflow-hidden">
         {/* 弹窗头部 */}
-        <div className="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+        <div className="border-b border-gray-200 dark:border-gray-800 px-6 py-4">
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">容器详情</h3>
@@ -1620,7 +1620,7 @@ function ContainerDetailModal({ container, onClose, onRename, onUpdate, onAction
         </div>
         
         {/* 弹窗底部操作按钮 */}
-        <div className="border-t border-gray-200 dark:border-gray-700 px-6 py-4 bg-gray-50 dark:bg-gray-700/30">
+        <div className="border-t border-gray-200 dark:border-gray-800 px-6 py-4 bg-gray-50 dark:bg-gray-800/50">
           <div className="flex justify-between gap-2">
             <button
               onClick={onClose}
@@ -1637,7 +1637,7 @@ function ContainerDetailModal({ container, onClose, onRename, onUpdate, onAction
                 className={`flex-1 sm:flex-none px-2 sm:px-4 py-2 text-sm rounded-lg transition-colors flex items-center justify-center sm:justify-start gap-1 sm:gap-2 ${
                   isActionProcessing && currentAction === 'update'
                     ? 'bg-gray-200 text-gray-500 cursor-not-allowed dark:bg-gray-700 dark:text-gray-400'
-                    : 'bg-purple-600 text-white hover:bg-purple-700 dark:bg-purple-500 dark:hover:bg-purple-600'
+                    : 'bg-primary-600 text-white hover:bg-primary-700 dark:bg-primary-500 dark:hover:bg-primary-600'
                 }`}
                 title="更新"
               >
@@ -1785,11 +1785,11 @@ function ContainerStatsSection({ containerId, isRunning }) {
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
         资源占用
       </label>
-      <div className="rounded-xl border border-gray-200 dark:border-gray-700 p-3 space-y-3">
+      <div className="rounded-xl border border-gray-200 dark:border-gray-800 p-3 space-y-3">
         {/* CPU */}
         <div className="flex items-center justify-between text-xs">
           <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-            <Cpu className="h-3.5 w-3.5 text-purple-500" /> CPU
+            <Cpu className="h-3.5 w-3.5 text-primary-500" /> CPU
           </span>
           <span className="font-medium text-gray-900 dark:text-white tabular-nums">
             {stats.cpuPercent.toFixed(2)}%
@@ -1799,17 +1799,17 @@ function ContainerStatsSection({ containerId, isRunning }) {
         <div className="space-y-1">
           <div className="flex items-center justify-between text-xs">
             <span className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400">
-              <MemoryStick className="h-3.5 w-3.5 text-blue-500" /> 内存
+              <MemoryStick className="h-3.5 w-3.5 text-primary-500" /> 内存
             </span>
             <span className="font-medium text-gray-900 dark:text-white tabular-nums">
               {formatBytes(stats.memoryUsage)} / {formatBytes(stats.memoryLimit)}（{stats.memoryPercent.toFixed(1)}%）
             </span>
           </div>
-          <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+          <div className="h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
             <div
               className={cn(
                 "h-full rounded-full transition-all duration-500",
-                memPercent > 80 ? "bg-red-500" : memPercent > 50 ? "bg-yellow-500" : "bg-blue-500"
+                memPercent > 80 ? "bg-red-500" : memPercent > 50 ? "bg-yellow-500" : "bg-primary-500"
               )}
               style={{ width: `${Math.max(memPercent, 1)}%` }}
             />
@@ -1829,7 +1829,7 @@ function ContainerStatsSection({ containerId, isRunning }) {
           <span className="tabular-nums">↓{formatBytes(stats.netRx)} ↑{formatBytes(stats.netTx)}</span>
         </div>
         {/* 磁盘 IO 与进程数 */}
-        <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-100 dark:border-gray-700">
+        <div className="flex items-center justify-between text-xs pt-2 border-t border-gray-100 dark:border-gray-800">
           <span className="text-gray-400 dark:text-gray-500">磁盘 IO（累计读写）</span>
           <span className="text-gray-500 dark:text-gray-400 tabular-nums">
             {formatBytes(stats.blockRead)} / {formatBytes(stats.blockWrite)}

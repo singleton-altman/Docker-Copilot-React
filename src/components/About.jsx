@@ -6,7 +6,7 @@ export function About() {
   return (
     <div className="max-w-3xl mx-auto">
       {/* 头部信息 */}
-      <div className="card rounded-3xl p-6 sm:p-8 mb-4 text-center bg-gradient-to-br from-primary-50 to-blue-50 dark:from-primary-900/20 dark:to-blue-900/20">
+      <div className="card rounded-3xl p-6 sm:p-8 mb-4 text-center bg-primary-50 dark:bg-primary-900/10">
         <h1 className="text-3xl sm:text-4xl font-bold text-gray-900 dark:text-white mb-2">Docker Copilot</h1>
         <p className="text-gray-600 dark:text-gray-400">一个简洁优雅的Docker容器管理工具</p>
       </div>
@@ -14,7 +14,7 @@ export function About() {
       {/* 主要内容 */}
       <div className="space-y-4">
         {/* 感谢卡片 */}
-        <div className="card p-6 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+        <div className="card p-6 rounded-2xl border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-shadow">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">致谢</h2>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
             非常感谢大家自项目开始以来的使用、建议、鼓励和支持。特别感谢绿联对本项目的支持。没有大家的反馈，Docker Copilot 不会是今天的样子。他是属于我们共同的作品。
@@ -22,7 +22,7 @@ export function About() {
         </div>
 
         {/* 反馈卡片 */}
-        <div className="card p-6 rounded-2xl border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
+        <div className="card p-6 rounded-2xl border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-shadow">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">反馈与建议</h2>
           <p className="text-gray-600 dark:text-gray-400 leading-relaxed">
             在项目使用中遇到 bug 或想要提建议？欢迎在 
@@ -46,7 +46,7 @@ export function About() {
         </div>
 
         {/* 赞赏卡片 */}
-        <div className="card p-6 sm:p-8 rounded-2xl border-2 border-primary-200 dark:border-primary-800 bg-gradient-to-br from-primary-50 to-primary-100 dark:from-primary-900/20 dark:to-primary-900/30 hover:shadow-lg transition-all">
+        <div className="card p-6 sm:p-8 rounded-2xl border-2 border-primary-200 dark:border-primary-800 bg-primary-50 dark:bg-primary-900/20 hover:shadow-lg transition-all">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-primary-900 dark:text-primary-200 mb-2">最后的最后</h2>
             <p className="text-primary-800 dark:text-primary-300 mb-4">
@@ -80,7 +80,7 @@ export function About() {
         </div>
 
         {/* 信息卡片 */}
-        <div className="card p-6 rounded-2xl border border-gray-200 dark:border-gray-700">
+        <div className="card p-6 rounded-2xl border border-gray-200 dark:border-gray-800">
           <div className="grid grid-cols-2 gap-4 text-center">
             <div>
               <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 mb-1">项目地址</p>

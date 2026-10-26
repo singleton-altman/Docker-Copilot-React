@@ -44,7 +44,7 @@ export function ThemeToggle({ collapsed = false }) {
   }
 
   return (
-    <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+    <div className="flex items-center space-x-1 bg-gray-100 dark:bg-gray-800 rounded-lg p-1 ring-1 ring-inset ring-gray-200 dark:ring-gray-700">
       {themes.map(({ value, label, icon: Icon }) => (
         <button
           key={value}

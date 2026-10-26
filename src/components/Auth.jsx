@@ -39,19 +39,19 @@ export function Auth({ onLogin }) {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950 p-4">
       <div className="max-w-md w-full space-y-6">
         {/* 头部 */}
         <div className="text-center">
           <div className="flex justify-center mb-4">
-            <img 
+            <img
               src={logoImg}
               alt="Docker Copilot"
-              className="h-32 w-32 rounded-2xl object-cover"
+              className="h-28 w-28 rounded-3xl object-cover ring-1 ring-gray-200 dark:ring-gray-800"
             />
           </div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-white">Docker Copilot</h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">
+          <h2 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Docker Copilot</h2>
+          <p className="mt-2 text-gray-500 dark:text-gray-400">
             请输入密钥进行认证
           </p>
         </div>

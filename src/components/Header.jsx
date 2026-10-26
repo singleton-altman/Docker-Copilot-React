@@ -110,7 +110,7 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
     <>
       {/* 顶部导航栏 - 仅在手机模式（sm）显示 */}
       {windowWidth < 768 && (
-      <div className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-3 sm:px-4 z-40 shadow-sm">
+      <div className="fixed top-0 left-0 right-0 h-14 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 flex items-center justify-between px-3 sm:px-4 z-40 shadow-sm">
         {/* 左侧：Logo 和项目信息 */}
         <button
           onClick={() => setIsMobileMenuOpen(true)}
@@ -156,7 +156,7 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
       {/* 侧边栏 */}
       <aside 
         className={cn(
-          "fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-800 shadow-xl lg:shadow-none transform transition-all duration-300 ease-in-out flex flex-col",
+          "fixed inset-y-0 left-0 z-50 bg-white dark:bg-gray-900 shadow-xl lg:shadow-none transform transition-all duration-300 ease-in-out flex flex-col",
           isCollapsed ? "w-20" : "w-64 sm:w-72 md:w-64",
           // 手机模式：根据菜单打开状态显示/隐藏；md及以上：始终显示
           windowWidth < 768 
@@ -165,7 +165,7 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
           "max-h-screen overflow-y-auto",
           // 手机模式距顶部导航栏下方，其他模式从顶部开始
           windowWidth < 768 ? "top-14" : "top-0",
-          "border-r border-gray-200 dark:border-gray-700"
+          "border-r border-gray-200 dark:border-gray-800"
         )}
       >
         <div className="flex flex-col h-full">
@@ -205,7 +205,7 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
 
           {/* 分割线 */}
           <div className="px-4 sm:px-5">
-            <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
+            <div className="h-px bg-gray-200 dark:bg-gray-800" />
           </div>
 
           {/* 导航菜单 */}
@@ -225,14 +225,14 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
                         "w-full flex items-center rounded-lg text-left transition-all duration-200 group active:scale-95 relative overflow-hidden",
                         isCollapsed ? "justify-center p-2.5 sm:p-3" : "space-x-3 px-3 sm:px-4 py-2.5 sm:py-3",
                         isActive
-                          ? "bg-gradient-to-r from-primary-50 to-primary-100/50 dark:from-primary-900/30 dark:to-primary-900/10 text-primary-700 dark:text-primary-300 font-semibold shadow-sm"
+                          ? "bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-300 font-semibold shadow-sm"
                           : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50"
                       )}
                       title={isCollapsed ? item.label : undefined}
                     >
                       {/* 左侧指示条 */}
                       {isActive && !isCollapsed && (
-                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-primary-500 to-primary-600" />
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary-500" />
                       )}
                       
                       <Icon className={cn(
@@ -254,7 +254,7 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
           <div className={cn("flex flex-col flex-shrink-0", isCollapsed ? "p-2.5" : "p-4 sm:p-5")}>
             {/* 分割线 */}
             <div className="mb-4">
-              <div className="h-px bg-gradient-to-r from-transparent via-gray-200 dark:via-gray-700 to-transparent" />
+              <div className="h-px bg-gray-200 dark:bg-gray-800" />
             </div>
 
             {/* 操作按钮 */}
@@ -286,7 +286,7 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
               <div className="space-y-2">
                 {/* 状态指示 */}
                 <div className="flex justify-center">
-                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 group hover:bg-emerald-200 dark:hover:bg-emerald-900/50 transition-all duration-200 cursor-help" title={`在线 - ${backendVersion || 'v1.0'}`}>
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 transition-all duration-200 cursor-help" title={`在线 - ${backendVersion || 'v1.0'}`}>
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                   </span>
                 </div>
@@ -297,7 +297,7 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
                   className="flex justify-center w-full"
                   title={isDevInfoExpanded ? "隐藏开发人员" : "显示开发人员"}
                 >
-                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary-100 dark:bg-primary-900/30 hover:bg-primary-200 dark:hover:bg-primary-900/50 transition-all duration-200">
+                  <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-primary-500/10 hover:bg-primary-500/20 transition-all duration-200">
                     <span className="text-xs font-bold text-primary-600 dark:text-primary-400">👥</span>
                   </span>
                 </button>
@@ -309,7 +309,7 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
                     className="flex justify-center w-full"
                     title="有新版本"
                   >
-                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-100 dark:bg-amber-900/30 hover:bg-amber-200 dark:hover:bg-amber-900/50 transition-all duration-200 animate-pulse">
+                    <span className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 transition-all duration-200 animate-pulse">
                       <span className="w-2 h-2 rounded-full bg-amber-500"></span>
                     </span>
                   </button>
@@ -319,9 +319,9 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
               // 展开状态 - 完整卡片
               <div className="space-y-3">
                 {/* 版本信息卡片 - 现代极简风格 */}
-                <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700/50 dark:to-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md">
+                <div className="bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 rounded-xl overflow-hidden transition-all duration-200 hover:shadow-md">
                   {/* 卡片头部 - 状态和版本 */}
-                  <div className="px-3 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/50">
+                  <div className="px-3 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800/50">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-2 flex-1 min-w-0">
                         <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span>
@@ -349,11 +349,11 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
 
                     {isDevInfoExpanded && (
                       <div className="animate-in slide-in-from-top-2 duration-200 grid grid-cols-2 gap-2 pt-1">
-                        <div className="text-xs bg-white dark:bg-gray-800/50 rounded-lg p-2 border border-gray-100 dark:border-gray-700">
+                        <div className="text-xs bg-white dark:bg-gray-800/50 rounded-lg p-2 border border-gray-100 dark:border-gray-800">
                           <p className="text-gray-500 dark:text-gray-400 text-xs mb-1 font-medium">前端</p>
                           <p className="font-bold text-gray-900 dark:text-white">DongShu</p>
                         </div>
-                        <div className="text-xs bg-white dark:bg-gray-800/50 rounded-lg p-2 border border-gray-100 dark:border-gray-700">
+                        <div className="text-xs bg-white dark:bg-gray-800/50 rounded-lg p-2 border border-gray-100 dark:border-gray-800">
                           <p className="text-gray-500 dark:text-gray-400 text-xs mb-1 font-medium">后端</p>
                           <p className="font-bold text-gray-900 dark:text-white">onlyLTY</p>
                         </div>
@@ -362,7 +362,7 @@ export function Sidebar({ activeTab, onTabChange, onLogout, isCollapsed = false,
                   </div>
 
                   {/* 构建和更新信息 */}
-                  <div className="px-3 sm:px-4 py-2.5 border-t border-gray-200 dark:border-gray-700 space-y-1.5 text-xs">
+                  <div className="px-3 sm:px-4 py-2.5 border-t border-gray-200 dark:border-gray-800 space-y-1.5 text-xs">
                     <div className="flex items-center justify-between text-gray-600 dark:text-gray-400">
                       <span>⏰ 最后检查</span>
                       <span className="font-medium">{(new Date()).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })}</span>
@@ -442,7 +442,7 @@ export function MobileBottomNav({ activeTab, onTabChange, windowWidth = 1024 }) 
   return (
     <>
       {windowWidth < 768 && (
-      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-40">
+      <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 z-40">
         <div className="flex items-center justify-around h-16 px-2" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
           {navItems.map((item) => {
             const Icon = item.icon

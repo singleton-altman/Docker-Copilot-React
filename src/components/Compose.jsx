@@ -31,7 +31,7 @@ import { fileModifiedAfterDeploy, sha256Hex, shortFingerprint } from '../utils/f
 const ACTIONS = [
   { key: 'deploy', label: '更新并启动', icon: Rocket, color: 'text-green-600 dark:text-green-400' },
   { key: 'restart', label: '重启', icon: RotateCcw, color: 'text-amber-600 dark:text-amber-400' },
-  { key: 'pull', label: '仅拉取', icon: Download, color: 'text-blue-600 dark:text-blue-400' },
+  { key: 'pull', label: '仅拉取', icon: Download, color: 'text-primary-600 dark:text-primary-400' },
   { key: 'down', label: '停止', icon: Square, color: 'text-red-600 dark:text-red-400' },
 ]
 
@@ -70,11 +70,12 @@ function versionLabel(action) {
 }
 
 // 服务徽标色调：healthy 绿 / unhealthy 红 / starting 琥珀；无 health 仅展示 state（灰）。
+// 半透明底 + 同色发丝圈，与 .badge-* 基础类同风格。
 const SERVICE_TONE_CLASSES = {
-  healthy: 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-  unhealthy: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300',
-  starting: 'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-  plain: 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300',
+  healthy: 'bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 ring-1 ring-inset ring-emerald-600/20 dark:ring-emerald-400/20',
+  unhealthy: 'bg-red-500/10 text-red-700 dark:text-red-400 ring-1 ring-inset ring-red-600/20 dark:ring-red-400/20',
+  starting: 'bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-600/20 dark:ring-amber-400/20',
+  plain: 'bg-gray-500/10 text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-600/20 dark:ring-gray-400/20',
 }
 
 // 确认弹窗里的指纹只展示前 16 位，完整值放 title 提示。
@@ -361,7 +362,7 @@ export function Compose({ jobsController }) {
           </button>
           <button
             onClick={() => setShowNewDialog(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+            className="flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg bg-primary-600 text-white hover:bg-primary-700"
           >
             <Plus className="w-4 h-4" />
             新建
@@ -370,7 +371,7 @@ export function Compose({ jobsController }) {
       </div>
 
       {error && (
-        <div className="flex items-start gap-2 rounded-lg border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/20 px-3 py-2 text-sm text-red-700 dark:text-red-300">
+        <div className="flex items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-sm text-red-700 dark:text-red-300">
           <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
           <span className="flex-1">{error}</span>
           <button onClick={() => setError('')}>
@@ -380,7 +381,7 @@ export function Compose({ jobsController }) {
       )}
 
       {(tasks.historyLoading || tasks.historyError || !tasks.restored || Object.values(tasks.submissions).some(Boolean)) && (
-        <div role="status" className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-3 py-2 text-sm text-amber-800 dark:text-amber-200">
+        <div role="status" className="flex flex-wrap items-center gap-2 rounded-lg border border-amber-500/20 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
           {tasks.historyLoading && <Loader2 className="w-4 h-4 animate-spin shrink-0" />}
           <span className="flex-1 min-w-0">
             {Object.values(tasks.submissions).find((item) => item?.phase === 'unknown')?.message ||
@@ -413,8 +414,8 @@ export function Compose({ jobsController }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
         {/* 文件列表 */}
-        <div className="lg:col-span-1 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="lg:col-span-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-800">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">文件</span>
             <button onClick={loadFiles} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
               <RefreshCw className={cn('w-3.5 h-3.5', loadingList && 'animate-spin')} />
@@ -430,7 +431,7 @@ export function Compose({ jobsController }) {
                 className={cn(
                   'group flex items-center gap-2 px-3 py-2 cursor-pointer border-l-2',
                   selected === file.name
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                    ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
                     : 'border-transparent hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 )}
                 onClick={() => openFile(file.name)}
@@ -449,7 +450,7 @@ export function Compose({ jobsController }) {
                   }}
                   disabled={controller.blocked(file.name)}
                   aria-label={`删除 ${file.name}`}
-                  className="opacity-0 group-hover:opacity-100 disabled:opacity-30 p-1 rounded hover:bg-red-100 dark:hover:bg-red-900/30 text-red-600"
+                  className="opacity-0 group-hover:opacity-100 disabled:opacity-30 p-1 rounded hover:bg-red-500/10 text-red-600"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
                 </button>
@@ -459,8 +460,8 @@ export function Compose({ jobsController }) {
         </div>
 
         {/* 编辑器 */}
-        <div className="lg:col-span-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 flex flex-col">
-          <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="lg:col-span-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 flex flex-col">
+          <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
               {selected || '未选择文件'}
               {dirty && <span className="ml-1 text-amber-500">●</span>}
@@ -503,7 +504,7 @@ export function Compose({ jobsController }) {
             <button
               onClick={handleSave}
               disabled={!selected || !dirty || saving || selectedBusy}
-              className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg bg-blue-600 text-white disabled:opacity-50 hover:bg-blue-700"
+              className="flex items-center gap-1 px-2.5 py-1 text-xs rounded-lg bg-primary-600 text-white disabled:opacity-50 hover:bg-primary-700"
             >
               {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
               保存
@@ -531,7 +532,7 @@ export function Compose({ jobsController }) {
 
           <div className="relative flex-1 h-[52vh] min-h-0">
             {loadingFile && (
-              <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-gray-800/70 z-10">
+              <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-gray-900/70 z-10">
                 <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
               </div>
             )}
@@ -551,12 +552,12 @@ export function Compose({ jobsController }) {
                 />
               </div>
             ) : (
-              <div className="h-full flex items-center justify-center text-sm text-gray-400 rounded-b-xl border-t border-gray-200 dark:border-gray-700">
+              <div className="h-full flex items-center justify-center text-sm text-gray-400 rounded-b-xl border-t border-gray-200 dark:border-gray-800">
                 从左侧选择或新建一个 compose 文件
               </div>
             )}
           </div>
-          <div className="flex items-center justify-between px-3 py-1.5 border-t border-gray-200 dark:border-gray-700 text-[10px] text-gray-500">
+          <div className="flex items-center justify-between px-3 py-1.5 border-t border-gray-200 dark:border-gray-800 text-[10px] text-gray-500">
             <span>Ctrl/Cmd + Space 联想 · Tab 缩进 · Shift+Tab 反缩进</span>
             <span>{content.split('\n').length} 行 · {content.length} 字符</span>
           </div>
@@ -565,8 +566,8 @@ export function Compose({ jobsController }) {
 
       {/* 版本历史 */}
       {showVersions && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-800">
             <span className="text-sm font-medium">版本历史 · {selected}</span>
             <button
               onClick={() => setShowVersions(false)}
@@ -575,7 +576,7 @@ export function Compose({ jobsController }) {
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+          <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
             {versions.length === 0 && (
               <p className="px-3 py-6 text-center text-xs text-gray-500">暂无版本记录</p>
             )}
@@ -587,7 +588,7 @@ export function Compose({ jobsController }) {
                       {versionLabel(version.action)}
                     </span>
                     {version.backupName && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
+                      <span className="text-[10px] px-1.5 py-0.5 rounded bg-gray-500/10 text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/20">
                         可回滚
                       </span>
                     )}
@@ -611,8 +612,8 @@ export function Compose({ jobsController }) {
 
       {/* 执行结果 */}
       {task && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+          <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
             {task.notFound ? (
               <AlertTriangle className="w-4 h-4 text-amber-500" />
             ) : task.status === 'succeeded' ? (
@@ -622,7 +623,7 @@ export function Compose({ jobsController }) {
             ) : task.status === 'interrupted' ? (
               <AlertTriangle className="w-4 h-4 text-amber-500" />
             ) : (
-              <Loader2 className="w-4 h-4 animate-spin text-blue-500" />
+              <Loader2 className="w-4 h-4 animate-spin text-primary-500" />
             )}
             <span className="text-sm font-medium break-all">
               {actionLabel(task.action)} {task.filename} · {task.notFound ? '任务未找到 / 结果待确认' : STATUS_LABELS[task.status]}
@@ -649,7 +650,7 @@ export function Compose({ jobsController }) {
             window.confirm('任务未找到不代表执行失败。请核验服务实际状态，确认已结束或未执行后再解除保护。是否已核验？'))}>已人工核验，解除任务保护</button>}
           {!job && <p className="px-3 py-2 text-xs text-gray-500">{ACTIVE_STATUSES.has(task.status) && !task.notFound ? '正在跟踪任务，尚无最终输出' : '结果详情待确认，请刷新任务状态'}</p>}
           {job?.steps?.length > 0 && (
-            <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700 space-y-1.5">
+            <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800 space-y-1.5">
               {job.steps.map((step, index) => (
                 <div key={`${step.stage}-${index}`} className="flex items-start gap-2 text-xs">
                   {step.status === 'success' && (
@@ -670,7 +671,7 @@ export function Compose({ jobsController }) {
             </div>
           )}
           {servicesView?.kind === 'services' && (
-            <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-700">
+            <div className="px-3 py-2 border-b border-gray-100 dark:border-gray-800">
               <p className="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1.5">服务状态</p>
               <div className="flex flex-wrap gap-1.5">
                 {servicesView.services.map((service, index) => (
@@ -689,7 +690,7 @@ export function Compose({ jobsController }) {
             </div>
           )}
           {servicesView?.kind === 'legacy' && (
-            <p className="px-3 py-2 border-b border-gray-100 dark:border-gray-700 text-xs text-gray-500 dark:text-gray-400">
+            <p className="px-3 py-2 border-b border-gray-100 dark:border-gray-800 text-xs text-gray-500 dark:text-gray-400">
               服务端未提供服务状态（旧版本）
             </p>
           )}
@@ -701,15 +702,15 @@ export function Compose({ jobsController }) {
 
       {/* 历史 */}
       {showHistory && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-700">
+        <div className="bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-800">
             <span className="text-sm font-medium">执行历史</span>
             <button onClick={() => controller.reconcile()} className="text-xs underline">刷新执行历史</button>
             <button aria-label="关闭执行历史" onClick={() => setShowHistory(false)} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
               <X className="w-4 h-4" />
             </button>
           </div>
-          <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-700">
+          <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-gray-800">
             {tasks.historyLoading && <p role="status" className="px-3 py-2 text-xs text-gray-500">正在刷新执行历史…</p>}
             {tasks.historyError && <div role="alert" className="px-3 py-2 text-xs text-amber-600 dark:text-amber-400">{tasks.historyError} <button onClick={() => controller.reconcile()} className="underline">重试读取执行历史</button></div>}
             {history.length === 0 && !tasks.historyLoading && !tasks.historyError && (
@@ -724,7 +725,7 @@ export function Compose({ jobsController }) {
                   <span className="font-medium text-gray-800 dark:text-gray-200">{actionLabel(item.action)}</span>
                   <span className="text-gray-600 dark:text-gray-400 break-all">{item.filename}</span>
                   <span className="text-gray-400">{item.createdAt || item.result?.finishedAt ? new Date(item.createdAt || item.result.finishedAt).toLocaleString('zh-CN') : ''}</span>
-                  <button onClick={() => controller.select(item.id)} aria-label={`查看任务详情 ${item.id}`} className="underline text-blue-600 dark:text-blue-400">查看详情</button>
+                  <button onClick={() => controller.select(item.id)} aria-label={`查看任务详情 ${item.id}`} className="underline text-primary-600 dark:text-primary-400">查看详情</button>
                 </div>
                 {item.queryError && <p className="text-xs text-amber-600 dark:text-amber-400">{item.queryError}</p>}
               </div>
@@ -736,7 +737,7 @@ export function Compose({ jobsController }) {
       {/* 新建对话框 */}
       {showDeployDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-md p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 w-full max-w-md p-4">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-2">
               部署 {selected}
             </h3>
@@ -776,7 +777,7 @@ export function Compose({ jobsController }) {
               </button>
               <button
                 onClick={() => confirmDeploy(true)}
-                className="px-3 py-1.5 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                className="px-3 py-1.5 text-sm rounded-lg bg-primary-600 text-white hover:bg-primary-700"
               >
                 拉取最新并启动
               </button>
@@ -787,13 +788,13 @@ export function Compose({ jobsController }) {
 
       {showNewDialog && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl w-full max-w-sm p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-xl shadow-xl border border-gray-200 dark:border-gray-800 w-full max-w-sm p-4">
             <h3 className="font-semibold text-gray-900 dark:text-white mb-3">新建 compose 文件</h3>
             <input
               value={newName}
               onChange={(event) => setNewName(event.target.value)}
               placeholder="例如 app.yaml"
-              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
+              className="w-full px-3 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800"
               onKeyDown={(event) => event.key === 'Enter' && handleCreate()}
             />
             <p className="mt-1 text-[11px] text-gray-500">仅支持 .yml / .yaml，不能包含路径</p>
@@ -806,7 +807,7 @@ export function Compose({ jobsController }) {
               </button>
               <button
                 onClick={handleCreate}
-                className="px-3 py-1.5 text-sm rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                className="px-3 py-1.5 text-sm rounded-lg bg-primary-600 text-white hover:bg-primary-700"
               >
                 创建
               </button>
