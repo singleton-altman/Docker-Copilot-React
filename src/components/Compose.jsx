@@ -412,16 +412,17 @@ export function Compose({ jobsController }) {
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+      {/* lg 下整页填满视口：文件列表与编辑器等高，消灭下方死空间 */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 lg:h-[calc(100vh-150px)]">
         {/* 文件列表 */}
-        <div className="lg:col-span-1 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800">
-          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-800">
+        <div className="lg:col-span-1 lg:flex lg:flex-col bg-white dark:bg-gray-900 rounded-xl border shadow-sm border-gray-200 dark:border-gray-800 overflow-hidden">
+          <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200 dark:border-gray-800 shrink-0">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">文件</span>
             <button onClick={loadFiles} className="p-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700">
               <RefreshCw className={cn('w-3.5 h-3.5', loadingList && 'animate-spin')} />
             </button>
           </div>
-          <div className="max-h-[60vh] overflow-y-auto">
+          <div className="max-h-[60vh] lg:max-h-none lg:flex-1 overflow-y-auto">
             {files.length === 0 && !loadingList && (
               <p className="px-3 py-6 text-center text-xs text-gray-500">暂无 compose 文件</p>
             )}
@@ -460,7 +461,7 @@ export function Compose({ jobsController }) {
         </div>
 
         {/* 编辑器 */}
-        <div className="lg:col-span-3 bg-white dark:bg-gray-900 rounded-xl border border-gray-200 dark:border-gray-800 flex flex-col">
+        <div className="lg:col-span-3 lg:h-full min-h-[320px] flex flex-col bg-white dark:bg-gray-900 rounded-xl border shadow-sm border-gray-200 dark:border-gray-800">
           <div className="flex flex-wrap items-center gap-2 px-3 py-2 border-b border-gray-200 dark:border-gray-800">
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300 truncate">
               {selected || '未选择文件'}
@@ -530,7 +531,7 @@ export function Compose({ jobsController }) {
             })}
           </div>
 
-          <div className="relative flex-1 h-[52vh] min-h-0">
+          <div className="relative h-[52vh] lg:h-auto lg:flex-1 min-h-0">
             {loadingFile && (
               <div className="absolute inset-0 flex items-center justify-center bg-white/70 dark:bg-gray-900/70 z-10">
                 <Loader2 className="w-5 h-5 animate-spin text-gray-400" />
