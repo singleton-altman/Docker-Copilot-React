@@ -33,23 +33,6 @@ function AppContent() {
   })
   const [activeTab, setActiveTab] = useState(() => typeof window !== 'undefined' ? window.location.hash || '#containers' : '#containers')
   const [windowWidth, setWindowWidth] = useState(typeof window !== 'undefined' ? window.innerWidth : 1024)
-  const [userPreferredCollapsed, setUserPreferredCollapsed] = useState(false)
-
-  // 智能计算侧边栏是否应该收缩
-  const getSmartCollapsedState = (width, userPreference) => {
-    if (width < 768) {
-      // 手机模式：不在乎收缩状态，菜单模式处理
-      return false
-    } else if (width < 1024) {
-      // 平板模式：强制收缩，忽略用户偏好
-      return true
-    } else {
-      // 桌面模式：使用用户偏好
-      return userPreference
-    }
-  }
-
-  const isSidebarCollapsed = getSmartCollapsedState(windowWidth, userPreferredCollapsed)
 
   useEffect(() => {
     // 检查本地存储中是否有token
@@ -120,13 +103,6 @@ function AppContent() {
     if (window.location.hash !== tab) window.location.hash = tab
   }
 
-  const handleToggleCollapse = () => {
-    // 只有在桌面模式下才允许手动切换
-    if (windowWidth >= 1024) {
-      setUserPreferredCollapsed(!userPreferredCollapsed)
-    }
-  }
-
   const renderContent = () => {
     switch (activeTab) {
       case '#containers':
@@ -150,33 +126,26 @@ function AppContent() {
     return <Auth onLogin={handleLogin} />
   }
 
+  // 顶部导航布局：内容区占满宽度，移动端预留顶栏与底部导航空间
   return (
-    <div className="flex min-h-screen bg-gray-100 dark:bg-gray-950 transition-colors duration-300 flex-col lg:flex-row">
-      <Sidebar 
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 transition-colors duration-300 flex flex-col">
+      <Sidebar
         activeTab={activeTab}
         onTabChange={handleTabChange}
         onLogout={handleLogout}
-        isCollapsed={isSidebarCollapsed}
-        onToggleCollapse={handleToggleCollapse}
         windowWidth={windowWidth}
       />
-      <main className={cn(
-        "flex-1 flex flex-col transition-all duration-300",
-        "overflow-y-auto",
-        "min-h-screen",
-        windowWidth < 768 
-          ? 'pb-[calc(64px+env(safe-area-inset-bottom))]' 
-          : windowWidth < 1024 
-            ? 'ml-20' 
-            : isSidebarCollapsed 
-              ? 'ml-20' 
-              : 'ml-64'
-      )}>
-        <div className="flex-1 p-4 sm:p-4 lg:p-4 pt-1 sm:pt-4">
+      <main className="flex-1 w-full">
+        <div className={cn(
+          'max-w-[1440px] mx-auto px-4 sm:px-6 pt-4 sm:pt-5',
+          windowWidth < 768
+            ? 'pb-[calc(72px+env(safe-area-inset-bottom))]'
+            : 'pb-8'
+        )}>
           {renderContent()}
         </div>
       </main>
-      <MobileBottomNav 
+      <MobileBottomNav
         activeTab={activeTab}
         onTabChange={handleTabChange}
         windowWidth={windowWidth}
