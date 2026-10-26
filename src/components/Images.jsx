@@ -259,77 +259,54 @@ export function Images() {
         </div>
       )}
 
-      {/* 统计信息 */}
-      <div className="px-4 sm:px-6 py-4 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <button
-          onClick={() => setFilterStatus(null)}
-          className={cn(
-            "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === null ? "ring-2 ring-primary-400 dark:ring-primary-500" : ""
-          )}
-        >
-          <div className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
-            {images.length}
-          </div>
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">总镜像数</div>
-        </button>
-        <button
-          onClick={() => setFilterStatus('used')}
-          className={cn(
-            "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'used' ? "ring-2 ring-green-400 dark:ring-green-500" : ""
-          )}
-        >
-          <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-            {images.filter(img => img.inUsed).length}
-          </div>
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">使用中</div>
-        </button>
-        <button
-          onClick={() => setFilterStatus('unused')}
-          className={cn(
-            "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'unused' ? "ring-2 ring-yellow-400 dark:ring-yellow-500" : ""
-          )}
-        >
-          <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">
-            {images.filter(img => !img.inUsed).length}
-          </div>
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">未使用</div>
-        </button>
-        <button
-          onClick={() => setFilterStatus('dangling')}
-          className={cn(
-            "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'dangling' ? "ring-2 ring-orange-400 dark:ring-orange-500" : ""
-          )}
-        >
-          <div className="text-2xl sm:text-3xl font-bold text-orange-600 dark:text-orange-400 mb-2">
-            {images.filter(img => img.tag === 'None' || img.tag === '<none>').length}
-          </div>
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">无Tag</div>
-        </button>
+      {/* 状态筛选：紧凑分段控件（统计即筛选，替代原大卡片行） */}
+      <div className="px-4 sm:px-6 mb-3 flex flex-wrap items-center gap-2">
+        <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900">
+          {[
+            { key: null, label: '全部', count: images.length },
+            { key: 'used', label: '使用中', count: images.filter(img => img.inUsed).length },
+            { key: 'unused', label: '未使用', count: images.filter(img => !img.inUsed).length },
+            { key: 'dangling', label: '无Tag', count: images.filter(img => img.tag === 'None' || img.tag === '<none>').length },
+          ].map((seg, index) => {
+            const active = (filterStatus ?? null) === seg.key
+            return (
+              <button
+                key={seg.key ?? 'all'}
+                onClick={() => setFilterStatus(seg.key)}
+                className={cn(
+                  'px-3 py-1.5 text-xs font-medium transition-colors',
+                  index > 0 && 'border-l border-gray-200 dark:border-gray-800',
+                  active
+                    ? 'bg-primary-600 text-white'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                )}
+              >
+                {seg.label}
+                <span className={cn('ml-1 tabular-nums', active ? 'text-primary-200 dark:text-gray-950/60' : 'text-gray-400 dark:text-gray-500')}>
+                  {seg.count}
+                </span>
+              </button>
+            )
+          })}
+        </div>
       </div>
 
       {/* 筛选提示 */}
       {filterStatus && (
-        <div className="px-4 sm:px-6 py-2">
-          <div className="mb-4 p-3 bg-primary-500/10 border border-primary-500/20 rounded-lg">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-primary-700 dark:text-primary-300">
-                筛选中：
-                {filterStatus === 'used' && '使用中的镜像'}
-                {filterStatus === 'unused' && '未使用的镜像'}
-                {filterStatus === 'dangling' && '无Tag的镜像'}
-              </span>
-              <button
-                onClick={() => setFilterStatus(null)}
-                className="px-2 py-0.5 text-xs font-medium text-primary-600 dark:text-primary-300 hover:text-primary-800 dark:hover:text-primary-100 bg-primary-500/10 dark:bg-primary-800/50 rounded transition-colors"
-              >
-                清除筛选
-              </button>
-            </div>
-          </div>
+        <div className="px-4 sm:px-6 pb-3 -mt-1">
+          <span className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full text-xs font-medium bg-primary-500/10 text-primary-700 dark:text-primary-300 ring-1 ring-inset ring-primary-500/30">
+            {filterStatus === 'used' && '使用中的镜像'}
+            {filterStatus === 'unused' && '未使用的镜像'}
+            {filterStatus === 'dangling' && '无Tag的镜像'}
+            <button
+              onClick={() => setFilterStatus(null)}
+              className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-primary-500/20 transition-colors"
+              aria-label="清除筛选"
+              title="清除筛选"
+            >
+              ×
+            </button>
+          </span>
         </div>
       )}
 
