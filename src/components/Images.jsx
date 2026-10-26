@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { HardDrive, Trash2, RefreshCw, Link, BrushCleaning, X, AlertCircle, CheckCircle } from 'lucide-react'
+import { HardDrive, Trash2, RefreshCw, Link, BrushCleaning, X, AlertCircle, CheckCircle, Palette } from 'lucide-react'
 import { imageAPI } from '../api/client.js'
 import { cn } from '../utils/cn.js'
 import { getImageLogo } from '../config/imageLogos.js'
@@ -154,6 +154,14 @@ export function Images() {
             <p className="text-gray-600 dark:text-gray-400">查看和管理Docker镜像</p>
           </div>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => { window.location.hash = '#icons' }}
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 ring-1 ring-inset ring-gray-300/60 dark:ring-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors text-sm font-medium"
+              title="自定义镜像 Logo"
+            >
+              <Palette className="h-4 w-4" />
+              <span className="hidden sm:inline">图标管理</span>
+            </button>
             <button
               onClick={() => {
                 const imagesToDelete = images.filter(img => img.tag === 'None' || img.tag === '<none>')

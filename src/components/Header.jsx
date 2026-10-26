@@ -4,7 +4,6 @@ import {
   LogOut,
   Server,
   DatabaseBackup,
-  Palette,
   FileCode,
   Info,
 } from 'lucide-react'
@@ -19,7 +18,6 @@ const navItems = [
   { id: '#images', label: '镜像', icon: Box },
   { id: '#compose', label: '编排', icon: FileCode },
   { id: '#backups', label: '备份', icon: DatabaseBackup },
-  { id: '#icons', label: '图标', icon: Palette },
   { id: '#about', label: '关于', icon: Info },
 ]
 
