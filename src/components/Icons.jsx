@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { Search, Copy, Eye, Star, Check, X } from 'lucide-react'
 import { cn } from '../utils/cn.js'
-import { builtInImageLogos, getSupportedImageNames } from '../config/imageLogos.js'
+import { builtInImageLogos, getSupportedImageNames, isMonochromeLogo } from '../config/imageLogos.js'
 
 export function Icons() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -108,58 +108,54 @@ export function Icons() {
         <p className="text-gray-600 dark:text-gray-400">浏览和管理Docker镜像图标</p>
       </div>
 
-      {/* 搜索和过滤 */}
-      <div className="px-4 sm:px-6 py-4 space-y-4 border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50">
-        {/* 搜索框 */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
+      {/* 搜索与筛选工具条 */}
+      <div className="px-4 sm:px-6 py-4 flex flex-wrap items-center gap-2">
+        <div className="relative flex-1 min-w-[220px]">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <input
             type="text"
             placeholder="搜索图标名称..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+            className="input pl-9 pr-4 py-2"
           />
         </div>
 
-        {/* 分类过滤和统计 */}
-        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          >
-            {categories.map(category => (
-              <option key={category} value={category}>
-                {category === 'all' ? '全部分类' : 
-                 category === 'docker' ? 'Docker应用' :
-                 category === 'nas' ? 'NAS系统' :
-                 category === 'pt' ? 'PT站点' :
-                 category === 'cloud' ? '云服务商' :
-                 category === 'website' ? '网站服务' : category}
-              </option>
-            ))}
-          </select>
-          
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600 dark:text-gray-400">
-              共 {filteredIcons.length} 个
-            </span>
-            {favorites.length > 0 && (
-              <button
-                onClick={() => setSelectedCategory('favorites')}
-                className={cn(
-                  "px-3 py-2 text-sm rounded-lg transition-colors flex items-center gap-1.5",
-                  selectedCategory === 'favorites'
-                    ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-600/20 dark:ring-amber-400/20"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-                )}
-              >
-                <Star className="h-4 w-4" />
-                {favorites.length}
-              </button>
-            )}
-          </div>
+        <select
+          value={selectedCategory}
+          onChange={(e) => setSelectedCategory(e.target.value)}
+          className="input w-auto pr-8 py-2"
+        >
+          {categories.map(category => (
+            <option key={category} value={category}>
+              {category === 'all' ? '全部分类' :
+               category === 'docker' ? 'Docker应用' :
+               category === 'nas' ? 'NAS系统' :
+               category === 'pt' ? 'PT站点' :
+               category === 'cloud' ? '云服务商' :
+               category === 'website' ? '网站服务' : category}
+            </option>
+          ))}
+        </select>
+
+        <div className="flex items-center gap-2 ml-auto">
+          <span className="text-sm text-gray-500 dark:text-gray-400 tabular-nums">
+            共 {filteredIcons.length} 个
+          </span>
+          {favorites.length > 0 && (
+            <button
+              onClick={() => setSelectedCategory('favorites')}
+              className={cn(
+                "px-3 py-2 text-sm rounded-lg transition-colors flex items-center gap-1.5",
+                selectedCategory === 'favorites'
+                  ? "bg-amber-500/10 text-amber-700 dark:text-amber-400 ring-1 ring-inset ring-amber-600/20 dark:ring-amber-400/20"
+                  : "bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+              )}
+            >
+              <Star className="h-4 w-4" />
+              {favorites.length}
+            </button>
+          )}
         </div>
       </div>
 
@@ -178,7 +174,10 @@ export function Icons() {
                     <img
                       src={url}
                       alt={name}
-                      className="w-12 h-12 mx-auto object-contain rounded-lg"
+                      className={cn(
+                        'w-12 h-12 mx-auto object-contain rounded-lg',
+                        isMonochromeLogo(url) && 'dark:invert'
+                      )}
                       onError={(e) => {
                         e.target.src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjQiIGhlaWdodD0iNjQiIHZpZXdCb3g9IjAgMCA2NCA2NCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjY0IiBoZWlnaHQ9IjY0IiByeD0iOCIgZmlsbD0iI0YzRjRGNiIvPgo8cGF0aCBkPSJNMzIgMTZMNDEgMzBIMzNWMzhIMzFWMzBIMjNMMzIgMTZaIiBmaWxsPSIjOUNBM0FGIi8+Cjwvc3ZnPgo='
                       }}

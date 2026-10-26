@@ -25,6 +25,40 @@ import LuckyLogo from '../assets/logos/lucky.png';
 import EmbyserverLogo from '../assets/logos/embyserver.png';
 import AudiobookshelfLogo from '../assets/logos/audiobookshelf.png';
 import MySQLLogo from '../assets/logos/mysql.png';
+// 常见 Docker 服务图标（来源 Simple Icons，CC0）
+import NginxLogo from '../assets/logos/nginx.svg';
+import TraefikLogo from '../assets/logos/traefikproxy.svg';
+import PortainerLogo from '../assets/logos/portainer.svg';
+import GrafanaLogo from '../assets/logos/grafana.svg';
+import PrometheusLogo from '../assets/logos/prometheus.svg';
+import HomeAssistantLogo from '../assets/logos/homeassistant.svg';
+import PlexLogo from '../assets/logos/plex.svg';
+import NextcloudLogo from '../assets/logos/nextcloud.svg';
+import SyncthingLogo from '../assets/logos/syncthing.svg';
+import GiteaLogo from '../assets/logos/gitea.svg';
+import MinioLogo from '../assets/logos/minio.svg';
+import MongoDBLogo from '../assets/logos/mongodb.svg';
+import MariaDBLogo from '../assets/logos/mariadb.svg';
+import NPMLogo from '../assets/logos/nginxproxymanager.svg';
+import UptimeKumaLogo from '../assets/logos/uptimekuma.svg';
+import WatchtowerLogo from '../assets/logos/watchtower.svg';
+import SonarrLogo from '../assets/logos/sonarr.svg';
+import RadarrLogo from '../assets/logos/radarr.svg';
+import ImmichLogo from '../assets/logos/immich.svg';
+import AdGuardLogo from '../assets/logos/adguard.svg';
+import PiHoleLogo from '../assets/logos/pihole.svg';
+import NtfyLogo from '../assets/logos/ntfy.svg';
+
+// 单色 SVG 图标（Simple Icons，默认黑）：深色模式下需要反色显示
+const monoLogoSet = new Set([
+  NginxLogo, TraefikLogo, PortainerLogo, GrafanaLogo, PrometheusLogo,
+  HomeAssistantLogo, PlexLogo, NextcloudLogo, SyncthingLogo, GiteaLogo,
+  MinioLogo, MongoDBLogo, MariaDBLogo, NPMLogo, UptimeKumaLogo,
+  WatchtowerLogo, SonarrLogo, RadarrLogo, ImmichLogo, AdGuardLogo,
+  PiHoleLogo, NtfyLogo,
+]);
+
+export const isMonochromeLogo = (url) => typeof url === 'string' && monoLogoSet.has(url);
 
 export const builtInImageLogos = {
   "xylplm/media-saber": MediaSaberLogo,
@@ -52,6 +86,48 @@ export const builtInImageLogos = {
   "amilys/embyserver": EmbyserverLogo,
   "audiobookshelf": AudiobookshelfLogo,
   "mysql": MySQLLogo,
+  // 常见 Docker 服务（特例键在前，防止宽泛子串误抢——如 nginx 抢占 nginx-proxy-manager）
+  "jc21/nginx-proxy-manager": NPMLogo,
+  "nginx-proxy-manager": NPMLogo,
+  "louislam/uptime-kuma": UptimeKumaLogo,
+  "uptime-kuma": UptimeKumaLogo,
+  "containrrr/watchtower": WatchtowerLogo,
+  "watchtower": WatchtowerLogo,
+  "adguard/adguardhome": AdGuardLogo,
+  "adguardhome": AdGuardLogo,
+  "pihole/pihole": PiHoleLogo,
+  "pihole": PiHoleLogo,
+  "nginx": NginxLogo,
+  "traefik": TraefikLogo,
+  "portainer/portainer-ce": PortainerLogo,
+  "portainer/portainer-ee": PortainerLogo,
+  "portainer": PortainerLogo,
+  "grafana/grafana": GrafanaLogo,
+  "grafana": GrafanaLogo,
+  "prom/prometheus": PrometheusLogo,
+  "prometheus": PrometheusLogo,
+  "homeassistant/home-assistant": HomeAssistantLogo,
+  "homeassistant": HomeAssistantLogo,
+  "plexinc/pms-docker": PlexLogo,
+  "plex": PlexLogo,
+  "nextcloud": NextcloudLogo,
+  "syncthing/syncthing": SyncthingLogo,
+  "syncthing": SyncthingLogo,
+  "gitea/gitea": GiteaLogo,
+  "gitea": GiteaLogo,
+  "minio/minio": MinioLogo,
+  "minio": MinioLogo,
+  "mongo": MongoDBLogo,
+  "mongodb": MongoDBLogo,
+  "mariadb": MariaDBLogo,
+  "linuxserver/sonarr": SonarrLogo,
+  "sonarr": SonarrLogo,
+  "linuxserver/radarr": RadarrLogo,
+  "radarr": RadarrLogo,
+  "ghcr.io/immich-app/immich-server": ImmichLogo,
+  "immich": ImmichLogo,
+  "binwiederhier/ntfy": NtfyLogo,
+  "ntfy": NtfyLogo,
 };
 
 // 获取镜像的logo

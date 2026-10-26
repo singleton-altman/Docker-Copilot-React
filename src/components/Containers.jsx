@@ -21,7 +21,7 @@ import { ContainerLogsModal } from './ContainerLogs.jsx'
 import { cn } from '../utils/cn.js'
 import { formatBytes, formatRate } from '../utils/format.js'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { getImageLogo } from '../config/imageLogos.js'
+import { getImageLogo, isMonochromeLogo } from '../config/imageLogos.js'
 import icons8Img from '../assets/icons8.png'
 
 // 格式化运行时间为中文
@@ -950,10 +950,13 @@ export function Containers() {
                          
                           if (iconUrl) {
                             return (
-                              <img 
-                                src={iconUrl} 
-                                alt={container.name} 
-                                className="h-9 w-9 rounded-lg object-cover shadow-sm flex-shrink-0"
+                              <img
+                                src={iconUrl}
+                                alt={container.name}
+                                className={cn(
+                                  'h-9 w-9 rounded-lg object-cover shadow-sm flex-shrink-0',
+                                  isMonochromeLogo(iconUrl) && 'dark:invert'
+                                )}
                                 onError={(e) => {
                                   e.target.style.display = 'none';
                                   e.target.parentElement.innerHTML = `
