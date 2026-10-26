@@ -1131,13 +1131,12 @@ export function Containers() {
                         })()}
                       </div>
                     </div>
-                  </div>
 
-                  {/* 操作按钮栏 - 底部水平排列 */}
+                  {/* 操作按钮栏：卡片底部操作条（容器归属卡片内部，不再游离） */}
                   {!isBatchMode && (
-                    <div className="flex gap-2 mt-2 px-1">
+                    <div className="mt-3 pt-2 border-t border-gray-100 dark:border-gray-800/80 flex gap-1.5">
                       {containerActions[container.id]?.loading ? (
-                        <div className="flex-1 flex items-center justify-center space-x-2 px-2 py-1.5 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
+                        <div className="flex-1 flex items-center justify-center space-x-2 px-2 py-1 bg-primary-500/10 rounded-md">
                           <RefreshCw className="h-4 w-4 animate-spin text-primary-600 dark:text-primary-400" />
                           <span className="text-xs font-medium text-primary-600 dark:text-primary-400">
                             {containerActions[container.id].action === 'start' && '启动中'}
@@ -1148,7 +1147,7 @@ export function Containers() {
                           {containerActions[container.id].action === 'update' && (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleCancelUpdate(container.name) }}
-                              className="ml-1 px-2 py-0.5 rounded-md text-[11px] font-medium text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 transition-colors"
+                              className="ml-1 px-2 py-0.5 rounded-md text-[11px] font-medium text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-colors"
                               title="中断更新"
                             >
                               中断
@@ -1161,48 +1160,47 @@ export function Containers() {
                             <>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleContainerAction(container.id, 'stop') }}
-                                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium"
+                                className="flex-1 py-1 rounded-md text-xs font-medium text-red-600 dark:text-red-400 bg-red-500/10 hover:bg-red-500/20 whitespace-nowrap transition-colors"
                                 title="停止"
                               >
-                                <Square className="h-4 w-4" />
-                                <span>停止</span>
+                                停止
                               </button>
                               <button
                                 onClick={(e) => { e.stopPropagation(); handleContainerAction(container.id, 'restart') }}
-                                className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-primary-600 dark:text-primary-400 bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/20 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium"
+                                className="flex-1 py-1 rounded-md text-xs font-medium text-gray-600 dark:text-gray-300 bg-gray-500/10 hover:bg-gray-500/20 whitespace-nowrap transition-colors"
                                 title="重启"
                               >
-                                <RotateCcw className="h-4 w-4" />
-                                <span>重启</span>
+                                重启
                               </button>
                             </>
                           ) : (
                             <button
                               onClick={(e) => { e.stopPropagation(); handleContainerAction(container.id, 'start') }}
-                              className="flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium"
+                              className="flex-1 py-1 rounded-md text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 hover:bg-emerald-500/20 whitespace-nowrap transition-colors"
                               title="启动"
                             >
-                              <Play className="h-4 w-4" />
-                              <span>启动</span>
+                              启动
                             </button>
                           )}
 
                           <button
                             onClick={(e) => { e.stopPropagation(); handleUpdateContainer(container.id) }}
                             className={cn(
-                              "flex-1 flex items-center justify-center gap-1.5 px-2 py-1.5 text-primary-600 dark:text-primary-400 bg-primary-500/10 hover:bg-primary-500/20 border rounded-lg transition-all duration-200 shadow-sm hover:shadow active:scale-95 text-xs font-medium",
-                              container.haveUpdate ? "border-yellow-400 dark:border-yellow-600" : "border-primary-200 dark:border-primary-800"
+                              "flex-1 py-1 rounded-md text-xs font-medium whitespace-nowrap transition-colors",
+                              container.haveUpdate
+                                ? "text-amber-600 dark:text-amber-400 bg-amber-500/10 hover:bg-amber-500/20"
+                                : "text-primary-600 dark:text-primary-400 bg-primary-500/10 hover:bg-primary-500/20"
                             )}
                             title="更新"
                           >
-                            <Upload className="h-4 w-4" />
-                            <span>更新</span>
+                            更新
                           </button>
 
                         </>
                       )}
                     </div>
                   )}
+                  </div>
                 </div>
               )
             })}
