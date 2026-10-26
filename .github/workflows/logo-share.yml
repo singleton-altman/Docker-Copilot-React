@@ -1,0 +1,55 @@
+name: logo-share
+
+# 容器/镜像 logo 共享包发布：master 上 logo 资产或映射变化时，
+# 构建并提交 share-logos.json + share-icon-* 到 logo-share 分支，
+# 供 server 端 LOGO_SHARE_URL 运行时拉取（无需发布 server）。
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'src/assets/logos/**'
+      - 'src/config/imageLogos.js'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: 构建（含 logo-share 导出）
+        run: |
+          npm ci
+          npm run build
+        env:
+          # dist 由 vite 插件写出到自定义 outDir 时可能不在项目根，
+          # 这里固定到默认 dist/ 再统一搬运，避免插件路径歧义
+          CI_OUTDIR: dist
+
+      - name: 收集共享包
+        run: |
+          mkdir -p logo-share
+          if [ -f dist/share-logos.json ]; then
+            cp dist/share-logos.json logo-share/
+            cp dist/share-icon-* logo-share/ 2>/dev/null || true
+          else
+            echo "share-logos.json 缺失，跳过发布" && exit 1
+          fi
+
+      - name: 提交到 logo-share 分支
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: logo-share
+          publish_dir: logo-share
+          keep_files: false
+          force_orphan: true
+          commit_message: 'logo share pack ${{ github.sha }}'
