@@ -820,101 +820,62 @@ export function Containers() {
         )}
       </div>
 
-      {/* 统计信息 */}
-      <div className="px-4 sm:px-6 py-4 grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <button
-          onClick={() => setFilterStatus(null)}
-          className={cn(
-            "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === null ? "ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/10" : ""
-          )}
-        >
-          <div className="text-2xl sm:text-3xl font-bold text-primary-600 dark:text-primary-400 mb-2">
-            {containers.length}
-          </div>
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">总容器数</div>
-        </button>
-        <button
-          onClick={() => setFilterStatus(filterStatus === 'running' ? null : 'running')}
-          className={cn(
-            "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'running' ? "ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/10" : ""
-          )}
-        >
-          <div className="text-2xl sm:text-3xl font-bold text-green-600 dark:text-green-400 mb-2">
-            {containers.filter(c => c.status === 'running').length}
-          </div>
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">运行中</div>
-        </button>
-        <button
-          onClick={() => setFilterStatus(filterStatus === 'stopped' ? null : 'stopped')}
-          className={cn(
-            "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'stopped' ? "ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/10" : ""
-          )}
-        >
-          <div className="text-2xl sm:text-3xl font-bold text-red-600 dark:text-red-400 mb-2">
-            {containers.filter(c => c.status && c.status.toLowerCase() !== 'running').length}
-          </div>
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">已停止</div>
-        </button>
-        <button
-          onClick={() => setFilterStatus(filterStatus === 'update' ? null : 'update')}
-          className={cn(
-            "card p-4 sm:p-6 rounded-2xl text-left transition-all duration-200 cursor-pointer hover:shadow-lg",
-            filterStatus === 'update' ? "ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/10" : ""
-          )}
-        >
-          <div className="text-2xl sm:text-3xl font-bold text-yellow-600 dark:text-yellow-400 mb-2">
-            {containers.filter(c => c.haveUpdate).length}
-          </div>
-          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">有更新</div>
-        </button>
-      </div>
-
+      {/* 状态筛选：紧凑分段控件（统计即筛选，替代原大卡片行） */}
       {/* 容器列表 */}
       <div className="px-4 sm:px-6 py-4">
-        {(filterStatus || selectedContainers.length > 0) && (
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            {filterStatus && (
-              <span className="inline-flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full text-xs font-medium bg-primary-500/10 text-primary-700 dark:text-primary-300 ring-1 ring-inset ring-primary-500/30">
-                {filterStatus === 'running' && '运行中'}
-                {filterStatus === 'stopped' && '已停止'}
-                {filterStatus === 'update' && '有更新'}
+        {/* 状态筛选分段 + 批量选择状态 */}
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <div className="inline-flex rounded-lg border border-gray-200 dark:border-gray-800 overflow-hidden bg-white dark:bg-gray-900">
+            {[
+              { key: null, label: '全部', count: containers.length },
+              { key: 'running', label: '运行中', count: containers.filter(c => c.status === 'running').length },
+              { key: 'stopped', label: '已停止', count: containers.filter(c => c.status && c.status.toLowerCase() !== 'running').length },
+              { key: 'update', label: '有更新', count: containers.filter(c => c.haveUpdate).length },
+            ].map((seg, index) => {
+              const active = (filterStatus ?? null) === seg.key
+              return (
                 <button
-                  onClick={() => { setFilterStatus(null); setIsBatchMode(false) }}
-                  className="w-4 h-4 flex items-center justify-center rounded-full hover:bg-primary-500/20 transition-colors"
-                  aria-label="清除筛选"
-                  title="清除筛选"
+                  key={seg.key ?? 'all'}
+                  onClick={() => setFilterStatus(seg.key)}
+                  className={cn(
+                    'px-3 py-1.5 text-xs font-medium transition-colors',
+                    index > 0 && 'border-l border-gray-200 dark:border-gray-800',
+                    active
+                      ? 'bg-primary-600 text-white'
+                      : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                  )}
                 >
-                  ×
+                  {seg.label}
+                  <span className={cn('ml-1 tabular-nums', active ? 'text-primary-200 dark:text-gray-950/60' : 'text-gray-400 dark:text-gray-500')}>
+                    {seg.count}
+                  </span>
                 </button>
-              </span>
-            )}
-            {selectedContainers.length > 0 && (
-              <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-500/10 text-gray-600 dark:text-gray-300 ring-1 ring-inset ring-gray-500/30">
-                已选 {selectedContainers.length} 个 · Ctrl/Cmd+点击可切换
-              </span>
-            )}
-            {filterStatus && (
-              <button
-                onClick={() => {
-                  const filteredContainers = containers.filter((container) => {
-                    if (filterStatus === 'running') return container.status && container.status.toLowerCase() === 'running'
-                    if (filterStatus === 'stopped') return container.status && container.status.toLowerCase() !== 'running'
-                    if (filterStatus === 'update') return container.haveUpdate
-                    return true
-                  })
-                  setSelectedContainers(filteredContainers.map(c => c.id))
-                  setIsBatchMode(true)
-                }}
-                className="px-2.5 py-1 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-500/10 hover:bg-gray-500/20 rounded-full transition-colors"
-              >
-                全选结果
-              </button>
-            )}
+              )
+            })}
           </div>
-        )}
+          {filterStatus && (
+            <button
+              onClick={() => {
+                const filteredContainers = containers.filter((container) => {
+                  if (filterStatus === 'running') return container.status && container.status.toLowerCase() === 'running'
+                  if (filterStatus === 'stopped') return container.status && container.status.toLowerCase() !== 'running'
+                  if (filterStatus === 'update') return container.haveUpdate
+                  return true
+                })
+                setSelectedContainers(filteredContainers.map(c => c.id))
+                setIsBatchMode(true)
+              }}
+              className="px-2.5 py-1.5 text-xs font-medium text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white bg-gray-500/10 hover:bg-gray-500/20 rounded-lg transition-colors"
+            >
+              全选结果
+            </button>
+          )}
+          {selectedContainers.length > 0 && (
+            <span className="inline-flex items-center px-2.5 py-1.5 rounded-lg text-xs font-medium bg-primary-500/10 text-primary-700 dark:text-primary-300">
+              已选 {selectedContainers.length} 个
+            </span>
+          )}
+        </div>
 
         {containers.length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
