@@ -991,7 +991,7 @@ export function Containers() {
                       </div>
                     )}
 
-                    <div className="relative z-10 flex items-center gap-3">
+                    <div className="relative z-10 flex items-center gap-2.5">
                       {/* 图标 */}
                       <div className="flex-shrink-0">
                         {(() => {
@@ -1017,11 +1017,11 @@ export function Containers() {
                               <img 
                                 src={iconUrl} 
                                 alt={container.name} 
-                                className="h-12 w-12 rounded-xl object-cover shadow-sm flex-shrink-0"
+                                className="h-9 w-9 rounded-lg object-cover shadow-sm flex-shrink-0"
                                 onError={(e) => {
                                   e.target.style.display = 'none';
                                   e.target.parentElement.innerHTML = `
-                                    <div class="h-12 w-12 bg-primary-600 rounded-xl flex items-center justify-center shadow-sm">
+                                    <div class="h-9 w-9 bg-primary-600 rounded-lg flex items-center justify-center shadow-sm">
                                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="h-6 w-6 text-white">
                                         <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
                                       </svg>
@@ -1032,7 +1032,7 @@ export function Containers() {
                             );
                           } else {
                             return (
-                              <div className="h-12 w-12 bg-primary-600 rounded-xl flex items-center justify-center shadow-sm flex-shrink-0">
+                              <div className="h-9 w-9 bg-primary-600 rounded-lg flex items-center justify-center shadow-sm flex-shrink-0">
                                 <Package className="h-6 w-6 text-white" />
                               </div>
                             );
@@ -1098,34 +1098,34 @@ export function Containers() {
                         {container.status === 'running' && statsById[container.id] && (() => {
                           const stats = statsById[container.id]
                           return (
-                            <div className="mt-2 grid grid-cols-3 gap-1.5 text-[11px]">
-                              <div
-                                className="flex items-center justify-center gap-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-1.5 py-1 border border-gray-100 dark:border-gray-700/60"
+                            <div className="mt-2 flex items-center gap-2.5 text-[11px] text-gray-500 dark:text-gray-400">
+                              <span
+                                className="flex items-center gap-1 shrink-0"
                                 title={`CPU 占用 ${stats.cpuPercent.toFixed(2)}%`}
                               >
                                 <Cpu className="h-3 w-3 text-primary-500 flex-shrink-0" />
-                                <span className="font-medium text-gray-700 dark:text-gray-200 truncate tabular-nums">
+                                <span className="font-medium tabular-nums">
                                   {stats.cpuPercent.toFixed(1)}%
                                 </span>
-                              </div>
-                              <div
-                                className="flex items-center justify-center gap-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-1.5 py-1 border border-gray-100 dark:border-gray-700/60"
+                              </span>
+                              <span
+                                className="flex items-center gap-1 shrink-0"
                                 title={`内存 ${formatBytes(stats.memoryUsage)} / ${formatBytes(stats.memoryLimit)}（${stats.memoryPercent.toFixed(1)}%）`}
                               >
                                 <MemoryStick className="h-3 w-3 text-primary-500 flex-shrink-0" />
-                                <span className="font-medium text-gray-700 dark:text-gray-200 truncate tabular-nums">
+                                <span className="font-medium tabular-nums">
                                   {formatBytes(stats.memoryUsage)}
                                 </span>
-                              </div>
-                              <div
-                                className="flex items-center justify-center gap-1 rounded-lg bg-gray-50 dark:bg-gray-800/60 px-1.5 py-1 border border-gray-100 dark:border-gray-700/60"
+                              </span>
+                              <span
+                                className="flex items-center gap-1 min-w-0"
                                 title={`网络 ↓${formatRate(stats.netRxRate)} ↑${formatRate(stats.netTxRate)}（累计 ↓${formatBytes(stats.netRx)} ↑${formatBytes(stats.netTx)}）`}
                               >
                                 <ArrowDownUp className="h-3 w-3 text-emerald-500 flex-shrink-0" />
-                                <span className="font-medium text-gray-700 dark:text-gray-200 truncate tabular-nums">
-                                  {formatRate(stats.netRxRate)}
+                                <span className="font-medium tabular-nums truncate">
+                                  ↓{formatRate(stats.netRxRate)}
                                 </span>
-                              </div>
+                              </span>
                             </div>
                           )
                         })()}
