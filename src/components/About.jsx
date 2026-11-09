@@ -1,6 +1,187 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import wechatImg from '../assets/wechat.jpg'
 import alipayImg from '../assets/alipay.jpg'
+import apiClient, { mcpAPI } from '../api/client.js'
+
+// MCP 配置卡片：开关 + 密钥 + 端点地址，保存即热生效（无需重启服务端）
+function McpCard() {
+  const [config, setConfig] = useState(null)
+  const [enabled, setEnabled] = useState(false)
+  const [keyInput, setKeyInput] = useState('')
+  const [showKey, setShowKey] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [toast, setToast] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+    mcpAPI.getConfig()
+      .then((res) => {
+        if (cancelled || res.data?.code !== 200) return
+        const data = res.data.data || {}
+        setConfig(data)
+        setEnabled(!!data.enabled)
+        setKeyInput(data.accessKey || '')
+      })
+      .catch(() => {
+        if (!cancelled) setError('无法读取 MCP 配置，请确认服务端版本 ≥ v2.4.1')
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false)
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  const showToast = (message) => {
+    setToast(message)
+    setTimeout(() => setToast(''), 2500)
+  }
+
+  const save = async (nextEnabled, nextKey) => {
+    setSaving(true)
+    setError('')
+    try {
+      const res = await mcpAPI.updateConfig(nextEnabled, nextKey)
+      if (res.data?.code !== 200) {
+        setError(res.data?.msg || '保存失败')
+        return
+      }
+      const data = res.data.data || {}
+      setConfig(data)
+      setEnabled(!!data.enabled)
+      setKeyInput(data.accessKey || '')
+      showToast(nextEnabled ? 'MCP 服务已开启' : 'MCP 服务已关闭')
+    } catch {
+      setError('保存失败，请检查网络')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  const copyEndpoint = async () => {
+    if (!endpointURL) return
+    try {
+      await navigator.clipboard.writeText(endpointURL)
+      showToast('端点地址已复制')
+    } catch {
+      showToast('复制失败')
+    }
+  }
+
+  const endpointURL = config?.endpoint
+    ? `${apiClient.defaults.baseURL}${config.endpoint}`
+    : ''
+
+  return (
+    <div className="card p-6 rounded-2xl border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-shadow">
+      <div className="flex items-center justify-between mb-2">
+        <h2 className="text-lg font-semibold text-gray-900 dark:text-white">MCP 服务</h2>
+        {!loading && (
+          <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+            enabled
+              ? 'bg-primary-600 text-white'
+              : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+          }`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${enabled ? 'bg-primary-200 animate-pulse' : 'bg-gray-400'}`} />
+            {enabled ? '已启用' : '未启用'}
+          </span>
+        )}
+      </div>
+      <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed mb-4">
+        开启后，Claude Desktop 等 AI 客户端可通过 MCP 协议连接本服务端，
+        读取与操作容器和 compose（Bearer 密钥鉴权）。
+      </p>
+
+      {loading ? (
+        <div className="text-sm text-gray-500 dark:text-gray-400">加载中…</div>
+      ) : (
+        <div className="space-y-4">
+          {/* 端点地址 */}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">端点地址</label>
+            <div className="flex items-stretch gap-2">
+              <code className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-xs sm:text-sm text-gray-800 dark:text-gray-200 truncate font-mono">
+                {endpointURL}
+              </code>
+              <button
+                type="button"
+                onClick={copyEndpoint}
+                className="shrink-0 px-3 py-2 rounded-xl text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                复制
+              </button>
+            </div>
+          </div>
+
+          {/* 访问密钥 */}
+          <div>
+            <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">
+              访问密钥（≥ 8 位，留空保存则沿用现值）
+            </label>
+            <div className="flex items-stretch gap-2">
+              <input
+                type={showKey ? 'text' : 'password'}
+                value={keyInput}
+                onChange={(e) => setKeyInput(e.target.value)}
+                placeholder="设置 Bearer 密钥"
+                autoComplete="new-password"
+                className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-gray-100 dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 border border-transparent focus:border-primary-500 focus:outline-none font-mono"
+              />
+              <button
+                type="button"
+                onClick={() => setShowKey(!showKey)}
+                className="shrink-0 px-3 py-2 rounded-xl text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+              >
+                {showKey ? '隐藏' : '显示'}
+              </button>
+            </div>
+          </div>
+
+          {/* 开关 + 保存 */}
+          <div className="flex items-center justify-between pt-1">
+            <label className="flex items-center gap-3 cursor-pointer select-none">
+              <button
+                type="button"
+                role="switch"
+                aria-checked={enabled}
+                onClick={() => setEnabled(!enabled)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  enabled ? 'bg-primary-600' : 'bg-gray-300 dark:bg-gray-700'
+                }`}
+              >
+                <span className={`inline-block h-[18px] w-[18px] transform rounded-full bg-white shadow transition-transform ${
+                  enabled ? 'translate-x-[24px]' : 'translate-x-[3px]'
+                }`} />
+              </button>
+              <span className="text-sm text-gray-700 dark:text-gray-300">
+                {enabled ? '开启中' : '已关闭'}
+              </span>
+            </label>
+            <button
+              type="button"
+              disabled={saving}
+              onClick={() => save(enabled, keyInput)}
+              className="px-5 py-2 rounded-xl text-sm font-medium bg-primary-600 text-white hover:bg-primary-700 disabled:opacity-50 transition-colors"
+            >
+              {saving ? '保存中…' : '保存'}
+            </button>
+          </div>
+
+          {error && (
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          )}
+        </div>
+      )}
+
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-xl bg-gray-900 dark:bg-gray-700 text-white text-sm shadow-lg z-50">
+          {toast}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export function About() {
   return (
@@ -13,6 +194,9 @@ export function About() {
 
       {/* 主要内容 */}
       <div className="space-y-4">
+        {/* MCP 服务配置 */}
+        <McpCard />
+
         {/* 感谢卡片 */}
         <div className="card p-6 rounded-2xl border border-gray-200 dark:border-gray-800 hover:shadow-lg transition-shadow">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-3">致谢</h2>

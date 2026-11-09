@@ -89,8 +89,16 @@ export const authAPI = {
   },
 }
 
+// MCP 服务配置API（服务端 v2.4.1+：运行时开关与密钥，热生效）
+export const mcpAPI = {
+  getConfig: () => apiClient.get('/api/mcp/config'),
+  // accessKey 传空串表示保留服务端已存密钥
+  updateConfig: (enabled, accessKey = '') => apiClient.post('/api/mcp/config', { enabled, accessKey }),
+}
+
 // 版本相关API
 export const versionAPI = {
+
   getVersion: (type) => {
     // 如果type参数为空，则不添加查询参数
     if (!type) {
