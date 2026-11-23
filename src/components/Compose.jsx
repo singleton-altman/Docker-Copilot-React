@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import {
   FileCode,
+  Circle,
   Plus,
   Save,
   Trash2,
@@ -439,7 +440,23 @@ export function Compose({ jobsController }) {
               >
                 <FileCode className="w-4 h-4 text-gray-400 shrink-0" />
                 <div className="min-w-0 flex-1">
-                  <p className="text-sm truncate text-gray-900 dark:text-white">{file.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm truncate text-gray-900 dark:text-white">{file.name}</p>
+                    {Array.isArray(file.services) && file.services.length > 0 && (
+                      <span
+                        className={cn(
+                          'inline-flex items-center gap-1 shrink-0 text-[10px] px-1.5 py-0.5 rounded-full',
+                          file.services.some((s) => s.health === 'unhealthy' || s.state !== 'running')
+                            ? 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
+                            : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                        )}
+                        title={file.services.map((s) => `${s.name}: ${s.state}${s.health ? ` (${s.health})` : ''}`).join('\n')}
+                      >
+                        <Circle className="w-2 h-2 fill-current" />
+                        {file.services.length} 服务
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] text-gray-500">
                     {file.size} B · {file.updatedAt}
                   </p>
